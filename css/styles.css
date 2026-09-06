@@ -133,6 +133,14 @@ body.no-scroll{overflow:hidden}
 .testimonial p{margin:8px 0;color:var(--text)}
 .testimonial footer{color:var(--muted);font-size:0.9rem}
 
+/* REVIEW GUIDE */
+.guide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.guide-card{background:rgba(255,255,255,0.03);border:1px solid rgba(212,175,55,0.16);border-radius:12px;padding:22px}
+.guide-card h2{margin-top:0}
+.guide-list{display:grid;gap:14px;margin:0;padding-left:20px;color:var(--muted)}
+.guide-list li{padding-left:4px}
+.guide-list strong{color:var(--text)}
+
 /* PRICING */
 .pricing-grid{display:grid;grid-template-columns:1fr;gap:16px}
 .pricing-card{position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:12px;text-align:center;transition:transform .25s,box-shadow .25s}
@@ -195,6 +203,7 @@ select option{background-color:var(--surface);color:var(--text)}
   .features-grid{grid-template-columns:repeat(3,1fr)}
   .stats-grid{grid-template-columns:repeat(4,1fr)}
   .testimonial-grid{grid-template-columns:repeat(3,1fr)}
+  .guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .pricing-grid{grid-template-columns:repeat(3,1fr)}
   .footer-grid{grid-template-columns:repeat(3,1fr)}
   .order-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
@@ -209,6 +218,8 @@ select option{background-color:var(--surface);color:var(--text)}
   .hero-ctas .btn{justify-content:center}
   .hero-banner{width:min(100%,320px)}
   .step,.feature,.testimonial,.pricing-card{padding:16px}
+  .guide-card{padding:16px}
+  .guide-grid{grid-template-columns:1fr}
   .stats-grid{gap:12px}
   .stat{padding:8px}
   .stat-number{font-size:1.6rem}
