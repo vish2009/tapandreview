@@ -125,7 +125,19 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       var ownerPhone = '917620952720';
-      var message = `Hi TapToReview, Business: ${biz} City: ${city} Category: ${category} GoogleURL: ${google} Quantity: ${qty} WhatsApp: ${contact} GeneratedSlug: ${slug} Please confirm price and delivery.`;
+      var businessUrl = new URL(`/${slug}`, window.location.origin).href;
+      var message = [
+        'Hi TapToReview,',
+        `Business: ${biz}`,
+        `City: ${city}`,
+        `Category: ${category}`,
+        `GoogleURL: ${google}`,
+        `Quantity: ${qty}`,
+        `WhatsApp: ${contact}`,
+        `GeneratedSlug: ${slug}`,
+        `BusinessURL: ${businessUrl}`,
+        'Please confirm price and delivery.'
+      ].join('\n');
       var url = `https://wa.me/${ownerPhone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank', 'noopener');
       showToast('Opening WhatsApp with your order — please confirm the message and send.');
