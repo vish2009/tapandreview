@@ -58,19 +58,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Optional Google Review Link Formatter
-  function formatGoogleDestination(inputUrl) {
-    let finalUrl = inputUrl.trim();
-    if (finalUrl.includes('search.google.com/local/writereview')) {
-      return finalUrl;
-    }
-    const placeIdMatch = finalUrl.match(/(?:placeid=|place_id:)([^&?#]+)/);
-    if (placeIdMatch && placeIdMatch[1]) {
-      return `https://search.google.com/local/writereview?placeid=${placeIdMatch[1]}`;
-    }
-    return finalUrl;
-  }
-
   // Form: Save to Supabase and open WhatsApp
   var form = document.getElementById('order-form');
   if (form) {
@@ -88,7 +75,40 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      var google = formatGoogleDestination(rawGoogleInput);
+      var submitButton = document.getElementById('form-submit');
+      if (!supabaseClient) {
+        showToast('Registration is temporarily unavailable. Please try again shortly.');
+        return;
+      }
+
+      submitButton.disabled = true;
+      submitButton.textContent = 'Preparing your review link...';
+
+      var google;
+      try {
+        const { data, error } = await supabaseClient.functions.invoke('generate-review-link', {
+          body: {
+            url: rawGoogleInput,
+            domain: window.location.hostname,
+            platform: 'google'
+          }
+        });
+
+        if (error || !data?.success || !data.destination_url) {
+          console.error('Google review link generation error:', error || data);
+          showToast('We could not find your Google Business link. Please check the URL and try again.');
+          return;
+        }
+
+        google = data.destination_url;
+      } catch (err) {
+        console.error('Google review link generation exception:', err);
+        showToast('We could not prepare your Google review link. Please try again.');
+        return;
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Send Order on WhatsApp';
+      }
 
       var baseText = city ? `${biz}-${city}` : biz;
       var slug = baseText
