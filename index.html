@@ -34,9 +34,9 @@
           <span class="hamburger"></span>
         </button>
         <ul class="nav-list" id="nav-list">
+          <li><a href="#leaderboard">Leaderboard</a></li>
           <li><a href="#how-it-works">How it Works</a></li>
           <li><a href="#benefits">Benefits</a></li>
-          <li><a href="#leaderboard">Leaderboard</a></li>
           <li><a href="#pricing">Pricing</a></li>
           <li><a href="#faq">FAQ</a></li>
           <li><a class="btn btn-cta" id="contact-cta" href="https://wa.me/917620952720?text=Hi%20TapToReview,%20I%20want%20to%20order%20a%20smart%20review%20card" target="_blank" rel="noopener">Contact</a></li>
@@ -96,6 +96,40 @@
       </div>
     </section>
 
+    <!-- LEADERBOARD (NOW DIRECTLY AFTER STATS) -->
+    <section id="leaderboard" class="section leaderboard-section">
+      <div class="container">
+        <h2 class="reveal">🏆 Monthly Tap Champions</h2>
+        <p class="muted reveal">See which local businesses are driving the most customer engagement this month.</p>
+        <div class="leaderboard-filters reveal" id="lb-filters">
+          <button class="filter-btn active" data-cat="All">All Categories</button>
+          <button class="filter-btn" data-cat="Cafes & Restaurants">Cafes & Restaurants</button>
+          <button class="filter-btn" data-cat="Salons & Spas">Salons & Spas</button>
+          <button class="filter-btn" data-cat="Clinics & Healthcare">Clinics & Healthcare</button>
+          <button class="filter-btn" data-cat="Retail Stores">Retail Stores</button>
+          <button class="filter-btn" data-cat="Fitness & Gyms">Fitness & Gyms</button>
+        </div>
+        <div class="leaderboard-table-wrapper reveal">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Business Name</th>
+                <th>City</th>
+                <th>Category</th>
+                <th>Taps This Month</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+              <tr>
+                <td colspan="5" style="text-align: center; color: var(--muted);">Loading monthly champions...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <!-- HOW IT WORKS -->
     <section id="how-it-works" class="section how-it-works">
       <div class="container">
@@ -145,42 +179,6 @@
       </div>
     </section>
 
-    <!-- LEADERBOARD -->
-    <section id="leaderboard" class="section leaderboard-section">
-      <div class="container">
-        <h2 class="reveal">🏆 Monthly Tap Champions</h2>
-        <p class="muted reveal">See which local businesses are driving the most customer engagement this month.</p>
-        
-        <div class="leaderboard-filters reveal" id="lb-filters">
-          <button class="filter-btn active" data-cat="All">All Categories</button>
-          <button class="filter-btn" data-cat="Cafes & Restaurants">Cafes & Restaurants</button>
-          <button class="filter-btn" data-cat="Salons & Spas">Salons & Spas</button>
-          <button class="filter-btn" data-cat="Clinics & Healthcare">Clinics & Healthcare</button>
-          <button class="filter-btn" data-cat="Retail Stores">Retail Stores</button>
-          <button class="filter-btn" data-cat="Fitness & Gyms">Fitness & Gyms</button>
-        </div>
-
-        <div class="leaderboard-table-wrapper reveal">
-          <table class="leaderboard-table">
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Business Name</th>
-                <th>City</th>
-                <th>Category</th>
-                <th>Taps This Month</th>
-              </tr>
-            </thead>
-            <tbody id="leaderboard-body">
-              <tr>
-                <td colspan="5" style="text-align: center; color: var(--muted);">Loading monthly champions...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
     <!-- PACKS -->
     <section id="pricing" class="section pricing">
       <div class="container">
@@ -214,7 +212,6 @@
               </div>
             </div>
           </article>
-
           <article class="product-panel acrylic-panel reveal">
             <div class="product-copy acrylic-product-info">
               <div class="product-panel-heading">
@@ -241,7 +238,6 @@
       <div class="container">
         <h2 class="reveal">Get Started — Onboard Your Business</h2>
         <p class="muted reveal">Fill details below — we will open WhatsApp with your order so you can confirm and complete payment directly.</p>
-        
         <div class="order-layout">
           <div class="card-preview reveal">
             <p class="card-preview-label">Your card design — we program it with your Google review link</p>
@@ -379,46 +375,36 @@
             <h2>Why Google Reviews Matter for Your Business</h2>
             <ul class="guide-list">
               <li>
-                <strong>Local Ranking Power:</strong>
-                They decide your local ranking. Businesses with more recent, positive reviews show up higher in Google Maps and the local pack — the map box at the top of search results.
+                <strong>Local Ranking Power:</strong> They decide your local ranking. Businesses with more recent, positive reviews show up higher in Google Maps and the local pack — the map box at the top of search results.
               </li>
               <li>
-                <strong>The New Word of Mouth:</strong>
-                Most people read reviews before visiting a restaurant, booking a hotel, or calling a local service. No reviews often means no visit.
+                <strong>The New Word of Mouth:</strong> Most people read reviews before visiting a restaurant, booking a hotel, or calling a local service. No reviews often means no visit.
               </li>
               <li>
-                <strong>Proof of Life:</strong>
-                A steady stream of fresh reviews tells Google and customers that your business is active and doing things right.
+                <strong>Proof of Life:</strong> A steady stream of fresh reviews tells Google and customers that your business is active and doing things right.
               </li>
               <li>
-                <strong>Free Customer Feedback:</strong>
-                Reviews show you exactly what customers love — and what to fix next.
+                <strong>Free Customer Feedback:</strong> Reviews show you exactly what customers love — and what to fix next.
               </li>
             </ul>
           </div>
-
           <div class="guide-card reveal">
             <h2>Pro Tips for Getting More Reviews</h2>
             <ul class="guide-list">
               <li>
-                <strong>Ask at the Right Moment:</strong>
-                Right after a positive interaction, when the customer is happiest — not days later.
+                <strong>Ask at the Right Moment:</strong> Right after a positive interaction, when the customer is happiest — not days later.
               </li>
               <li>
-                <strong>Make it Effortless:</strong>
-                Send your direct review link instead of asking customers to search for you on Google. Every extra step costs you reviews.
+                <strong>Make it Effortless:</strong> Send your direct review link instead of asking customers to search for you on Google. Every extra step costs you reviews.
               </li>
               <li>
-                <strong>Personalize the Request:</strong>
-                Mention their visit or order, and explain that reviews genuinely help your business. People respond to people.
+                <strong>Personalize the Request:</strong> Mention their visit or order, and explain that reviews genuinely help your business. People respond to people.
               </li>
               <li>
-                <strong>Reply to Every Review:</strong>
-                Yes, even the bad ones. A thoughtful reply shows you care — and future customers read your replies too.
+                <strong>Reply to Every Review:</strong> Yes, even the bad ones. A thoughtful reply shows you care — and future customers read your replies too.
               </li>
               <li>
-                <strong>Never Buy Reviews:</strong>
-                Incentives violate Google's policies and can get your reviews removed. Great service plus a frictionless review link works better anyway.
+                <strong>Never Buy Reviews:</strong> Incentives violate Google's policies and can get your reviews removed. Great service plus a frictionless review link works better anyway.
               </li>
             </ul>
           </div>
