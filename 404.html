@@ -15,7 +15,7 @@
       background-color: #f9fafb;
       color: #111827;
     }
-    .box { text-align: center; }
+    .box { text-align: center; max-width: 400px; padding: 20px; }
     .spinner {
       width: 36px;
       height: 36px;
@@ -32,7 +32,7 @@
 <body>
   <div class="box">
     <div class="spinner"></div>
-    <p>Opening Google Review page...</p>
+    <p id="status-msg">Opening Google Review page...</p>
   </div>
 
   <script>
@@ -41,39 +41,83 @@
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
     async function handleRedirect() {
-      // Extract slug from URL path (e.g., /my-phone-ahilyanagar -> my-phone-ahilyanagar)
-      const slug = window.location.pathname.replace(/^\/+|\/+$/g, '');
-
-      if (!slug) {
+      const rawPath = window.location.pathname.replace(/^\/+|\/+$/g, '');
+      if (!rawPath) {
         window.location.replace('/');
         return;
       }
 
-      // 1. Fetch destination URL for Google platform
-      const { data, error } = await supabaseClient
-        .from('clients')
-        .select('destination_url')
-        .eq('slug', slug)
-        .eq('platform', 'google')
-        .single();
+      // Check if route matches /r/{number} or direct /{number}
+      const segments = rawPath.split('/');
+      let cardCode = null;
 
-      if (error || !data?.destination_url) {
-        document.querySelector('.box').innerHTML = '<h2>Business link not found.</h2>';
-        return;
+      if (segments[0] === 'r' && segments[1] && /^\d+$/.test(segments[1])) {         cardCode = parseInt(segments[1], 10);       } else if (/^\d+$/.test(segments[0])) {
+        cardCode = parseInt(segments[0], 10);
       }
 
-      // 2. Await the tap increment so it finishes before redirecting
+      if (cardCode !== null) {
+        await handleCardCodeRedirect(cardCode);
+      } else {
+        await handleLegacySlugRedirect(rawPath);
+      }
+    }
+
+    async function handleCardCodeRedirect(cardCode) {
       try {
-        await supabaseClient.rpc('increment_tap', {
-          client_slug: slug,
-          client_platform: 'google'
-        });
-      } catch (err) {
-        console.error('Failed to increment tap:', err);
-      }
+        const { data, error } = await supabaseClient.rpc('get_card_details', { p_code: cardCode });
 
-      // 3. Redirect to Google after the database has successfully updated
-      window.location.replace(data.destination_url);
+        if (error || !data || data.status === 'unregistered' || !data.destination_url) {
+          // Unassigned/Deregistered card -> Route to activation
+          window.location.replace(`/activate?code=${cardCode}`);
+          return;
+        }
+
+        // Tap tracking for card
+        const cardSlug = 'card-' + cardCode;
+        try {
+          await supabaseClient.rpc('increment_tap', {
+            client_slug: cardSlug,
+            client_platform: 'google'
+          });
+        } catch (err) {
+          console.error('Failed to increment tap:', err);
+        }
+
+        window.location.replace(data.destination_url);
+      } catch (err) {
+        console.error('Resolution error:', err);
+        document.querySelector('.box').innerHTML = '<h2>Card error. Please try again.</h2>';
+      }
+    }
+
+    async function handleLegacySlugRedirect(slug) {
+      try {
+        const { data, error } = await supabaseClient
+          .from('clients')
+          .select('destination_url')
+          .eq('slug', slug)
+          .eq('platform', 'google')
+          .single();
+
+        if (error || !data?.destination_url) {
+          document.querySelector('.box').innerHTML = '<h2>Business link not found.</h2>';
+          return;
+        }
+
+        try {
+          await supabaseClient.rpc('increment_tap', {
+            client_slug: slug,
+            client_platform: 'google'
+          });
+        } catch (err) {
+          console.error('Failed to increment tap:', err);
+        }
+
+        window.location.replace(data.destination_url);
+      } catch (err) {
+        console.error('Legacy resolution error:', err);
+        document.querySelector('.box').innerHTML = '<h2>Link not found.</h2>';
+      }
     }
 
     handleRedirect();
