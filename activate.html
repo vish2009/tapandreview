@@ -111,7 +111,11 @@
           </label>
           <label>
             <span>Business Name</span>
-            <input type="text" id="regBizName" placeholder="e.g. Cafe Bloom" required>
+            <input type="text" id="regBizName" placeholder="e.g. Hotel Sandeep" required>
+          </label>
+          <label>
+            <span>City / Location</span>
+            <input type="text" id="regCity" placeholder="e.g. Pune, Maharashtra" required>
           </label>
           <label>
             <span>Business Category</span>
@@ -151,7 +155,9 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphdnNwbXFqbXJpbmZ4ZW5ib3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTkzOTksImV4cCI6MjEwNDAzNTM5OX0.7K-EFRRgLmLOh8BltHDH0qh61TDLbLlzCjJ5jBMXCc8';
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // Auto-fill card code from URL query param (?code=14)
+    let loadedSourceUrl = '';
+    let loadedDestinationUrl = '';
+
     const urlParams = new URLSearchParams(window.location.search);
     const initialCode = urlParams.get('code');
     if (initialCode) {
@@ -166,7 +172,6 @@
       toast.style.background = isError ? 'rgba(220, 38, 38, 0.15)' : 'rgba(2, 132, 199, 0.12)';
     }
 
-    // Toggle Tabs
     const tabRegisterBtn = document.getElementById('tabRegisterBtn');
     const tabDeregisterBtn = document.getElementById('tabDeregisterBtn');
     const registerForm = document.getElementById('registerForm');
@@ -213,6 +218,7 @@
       statusBadge.textContent = status.toUpperCase();
       statusBadge.className = 'badge badge-' + status;
 
+      // Populate Business Name
       if (data.business_name) {
         currentBiz.style.display = 'block';
         currentBizName.textContent = data.business_name;
@@ -222,39 +228,60 @@
         document.getElementById('regBizName').value = '';
       }
 
+      // Populate City
+      document.getElementById('regCity').value = data.city_location || '';
+
+      // Populate Source URL (preserves original Maps link)
+      loadedSourceUrl = data.source_url || '';
+      loadedDestinationUrl = data.destination_url || '';
+      document.getElementById('regMapsUrl').value = loadedSourceUrl || loadedDestinationUrl || '';
+
+      // Populate Category
+      if (data.category) {
+        document.getElementById('regCategory').value = data.category;
+      }
+
+      // Populate Mode
+      if (data.status === 'active' || data.status === 'demo') {
+        document.getElementById('regMode').value = data.status;
+      }
+
       showToast('Card loaded.');
     });
 
-    // Register Card Form Submit
+    // Save & Activate
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const code = parseInt(document.getElementById('cardCode').value, 10);
       const pin = document.getElementById('batchPin').value.trim();
       const mode = document.getElementById('regMode').value;
       const bizName = document.getElementById('regBizName').value.trim();
+      const city = document.getElementById('regCity').value.trim();
       const category = document.getElementById('regCategory').value;
-      const rawUrl = document.getElementById('regMapsUrl').value.trim();
+      const inputUrl = document.getElementById('regMapsUrl').value.trim();
 
-      showToast('Optimizing review link via Google Places...');
-      let finalReviewUrl = rawUrl;
+      let finalReviewUrl = inputUrl;
 
-      // Invoke generate-review-link Edge Function with expected keys
-      try {
-        const { data: edgeData, error: edgeErr } = await supabaseClient.functions.invoke('generate-review-link', {
-          body: {
-            url: rawUrl,
-            domain: window.location.hostname,
-            platform: 'google'
+      // Only resolve via Edge Function if URL was edited or not resolved before
+      if (inputUrl === loadedSourceUrl && loadedDestinationUrl) {
+        finalReviewUrl = loadedDestinationUrl;
+      } else {
+        showToast('Resolving direct review link...');
+        try {
+          const { data: edgeData, error: edgeErr } = await supabaseClient.functions.invoke('generate-review-link', {
+            body: {
+              url: inputUrl,
+              domain: window.location.hostname,
+              platform: 'google'
+            }
+          });
+
+          if (!edgeErr && edgeData?.success && edgeData?.destination_url) {
+            finalReviewUrl = edgeData.destination_url;
           }
-        });
-
-        if (!edgeErr && edgeData?.success && edgeData?.destination_url) {
-          finalReviewUrl = edgeData.destination_url;
-        } else {
-          console.warn('Edge function skipped or unoptimized:', edgeErr || edgeData);
+        } catch (err) {
+          console.warn('Edge function invoke exception, fallback to raw url:', err);
         }
-      } catch (err) {
-        console.warn('Edge function invoke exception, using original URL:', err);
       }
 
       showToast('Saving to card...');
@@ -264,7 +291,9 @@
         p_business_name: bizName,
         p_destination_url: finalReviewUrl,
         p_category: category,
-        p_mode: mode
+        p_mode: mode,
+        p_source_url: inputUrl,
+        p_city_location: city
       });
 
       if (error || !data?.success) {
@@ -272,11 +301,11 @@
         return;
       }
 
-      showToast(`Success! Card ${code} registered as ${mode}. Destination set to review modal.`);
+      showToast(`Success! Card ${code} registered as ${mode}.`);
       document.getElementById('checkCardBtn').click();
     });
 
-    // Confirm Deregister
+    // Deregister & Clear
     document.getElementById('confirmDeregisterBtn').addEventListener('click', async () => {
       const code = parseInt(document.getElementById('cardCode').value, 10);
       const pin = document.getElementById('batchPin').value.trim();
