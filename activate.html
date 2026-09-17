@@ -235,19 +235,26 @@
       const category = document.getElementById('regCategory').value;
       const rawUrl = document.getElementById('regMapsUrl').value.trim();
 
-      showToast('Optimizing review link...');
+      showToast('Optimizing review link via Google Places...');
       let finalReviewUrl = rawUrl;
 
-      // Convert via Edge Function if applicable
+      // Invoke generate-review-link Edge Function with expected keys
       try {
         const { data: edgeData, error: edgeErr } = await supabaseClient.functions.invoke('generate-review-link', {
-          body: { mapsUrl: rawUrl }
+          body: {
+            url: rawUrl,
+            domain: window.location.hostname,
+            platform: 'google'
+          }
         });
-        if (!edgeErr && edgeData && edgeData.reviewUrl) {
-          finalReviewUrl = edgeData.reviewUrl;
+
+        if (!edgeErr && edgeData?.success && edgeData?.destination_url) {
+          finalReviewUrl = edgeData.destination_url;
+        } else {
+          console.warn('Edge function skipped or unoptimized:', edgeErr || edgeData);
         }
       } catch (err) {
-        console.warn('Edge function skipped, using direct URL:', err);
+        console.warn('Edge function invoke exception, using original URL:', err);
       }
 
       showToast('Saving to card...');
@@ -265,7 +272,7 @@
         return;
       }
 
-      showToast(`Success! Card ${code} is now set up as ${mode}. Test tap at: /r/${code}`);
+      showToast(`Success! Card ${code} registered as ${mode}. Destination set to review modal.`);
       document.getElementById('checkCardBtn').click();
     });
 
