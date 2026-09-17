@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Portal — TapToReview</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .portal-card {
+      max-width: 520px;
+      margin: 40px auto;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .badge-unregistered { background: rgba(148, 163, 184, 0.2); color: var(--muted); }
+    .badge-demo { background: rgba(212, 175, 55, 0.2); color: var(--gold); }
+    .badge-active { background: rgba(2, 132, 199, 0.2); color: var(--cyan); }
+    .tab-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 12px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 0;
+      color: var(--muted);
+      font-weight: 700;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 6px;
+    }
+    .tab-btn.active {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+    }
+    .btn-danger {
+      background: #dc2626;
+      color: #fff;
+      border: 0;
+    }
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+    .status-box {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="portal-card">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <a href="/" class="logo">
+          <img src="/assets/taptoreview.svg" alt="TapToReview.in" class="logo-img">
+        </a>
+        <h2 style="margin-top: 14px; font-size: 1.4rem;">Reseller Card Portal</h2>
+        <p class="micro">Assign, demo, or wipe reusable cards</p>
+      </div>
+
+      <!-- Step 1: Card Identifier & Password -->
+      <div class="form-grid">
+        <label>
+          <span>Card Number (e.g. 14 for /r/14)</span>
+          <input type="number" id="cardCode" placeholder="Enter card ID">
+        </label>
+        <label>
+          <span>Batch Password / Reseller PIN</span>
+          <input type="password" id="batchPin" placeholder="Enter batch password">
+        </label>
+        <button type="button" class="btn btn-outline" id="checkCardBtn" style="justify-content: center;">Load Card Status</button>
+      </div>
+
+      <!-- Step 2: Card Management Area -->
+      <div id="cardDetailsArea" style="display: none; margin-top: 24px;">
+        <div class="status-box">
+          <div>Status: <span id="cardStatusBadge" class="badge"></span></div>
+          <div id="currentBusiness" class="micro" style="display: none;">Assigned to: <strong id="currentBizName"></strong></div>
+        </div>
+
+        <div class="tab-group">
+          <button type="button" class="tab-btn active" id="tabRegisterBtn">Register / Demo</button>
+          <button type="button" class="tab-btn" id="tabDeregisterBtn">Deregister / Reset</button>
+        </div>
+
+        <!-- Mode A: Registration / Demo Form -->
+        <form id="registerForm" class="form-grid">
+          <label>
+            <span>Assignment Mode</span>
+            <select id="regMode">
+              <option value="demo">Demo Mode (Temporary testing)</option>
+              <option value="active">Active (Sold to client)</option>
+            </select>
+          </label>
+          <label>
+            <span>Business Name</span>
+            <input type="text" id="regBizName" placeholder="e.g. Cafe Bloom" required>
+          </label>
+          <label>
+            <span>Business Category</span>
+            <select id="regCategory" required>
+              <option value="Cafes & Restaurants">Cafes & Restaurants</option>
+              <option value="Salons & Spas">Salons & Spas</option>
+              <option value="Clinics & Healthcare">Clinics & Healthcare</option>
+              <option value="Retail Stores">Retail Stores</option>
+              <option value="Fitness & Gyms">Fitness & Gyms</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+          <label>
+            <span>Google Maps / Business URL</span>
+            <input type="url" id="regMapsUrl" placeholder="https://maps.google.com/..." required>
+          </label>
+          <button type="submit" class="btn btn-primary" id="saveCardBtn" style="justify-content: center; margin-top: 10px;">Save & Activate Card</button>
+        </form>
+
+        <!-- Mode B: Deregister / Wipe -->
+        <div id="deregisterArea" style="display: none;">
+          <p class="micro" style="margin-bottom: 16px;">
+            Deregistering will unlink this card, clear destination URLs, and mark the card as unassigned so it can be reused immediately.
+          </p>
+          <button type="button" class="btn btn-danger" id="confirmDeregisterBtn" style="justify-content: center; width: 100%;">
+            Confirm Deregister & Wipe
+          </button>
+        </div>
+      </div>
+
+      <div id="portalMessage" class="toast" style="display: none;"></div>
+    </div>
+  </div>
+
+  <script>
+    const supabaseUrl = 'https://zavspmqjmrinfxenbosz.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphdnNwbXFqbXJpbmZ4ZW5ib3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTkzOTksImV4cCI6MjEwNDAzNTM5OX0.7K-EFRRgLmLOh8BltHDH0qh61TDLbLlzCjJ5jBMXCc8';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Auto-fill card code from URL query param (?code=14)
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialCode = urlParams.get('code');
+    if (initialCode) {
+      document.getElementById('cardCode').value = initialCode;
+    }
+
+    function showToast(msg, isError = false) {
+      const toast = document.getElementById('portalMessage');
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      toast.style.borderColor = isError ? '#dc2626' : 'var(--cyan)';
+      toast.style.background = isError ? 'rgba(220, 38, 38, 0.15)' : 'rgba(2, 132, 199, 0.12)';
+    }
+
+    // Toggle Tabs
+    const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+    const tabDeregisterBtn = document.getElementById('tabDeregisterBtn');
+    const registerForm = document.getElementById('registerForm');
+    const deregisterArea = document.getElementById('deregisterArea');
+
+    tabRegisterBtn.addEventListener('click', () => {
+      tabRegisterBtn.classList.add('active');
+      tabDeregisterBtn.classList.remove('active');
+      registerForm.style.display = 'grid';
+      deregisterArea.style.display = 'none';
+    });
+
+    tabDeregisterBtn.addEventListener('click', () => {
+      tabDeregisterBtn.classList.add('active');
+      tabRegisterBtn.classList.remove('active');
+      registerForm.style.display = 'none';
+      deregisterArea.style.display = 'block';
+    });
+
+    // Check Card Status
+    document.getElementById('checkCardBtn').addEventListener('click', async () => {
+      const code = parseInt(document.getElementById('cardCode').value, 10);
+      const pin = document.getElementById('batchPin').value.trim();
+
+      if (!code || !pin) {
+        showToast('Please enter both card number and batch password.', true);
+        return;
+      }
+
+      showToast('Fetching card state...');
+      const { data, error } = await supabaseClient.rpc('get_card_details', { p_code: code });
+
+      if (error) {
+        showToast('Error loading card: ' + error.message, true);
+        return;
+      }
+
+      document.getElementById('cardDetailsArea').style.display = 'block';
+      const statusBadge = document.getElementById('cardStatusBadge');
+      const currentBiz = document.getElementById('currentBusiness');
+      const currentBizName = document.getElementById('currentBizName');
+
+      const status = data.status || 'unregistered';
+      statusBadge.textContent = status.toUpperCase();
+      statusBadge.className = 'badge badge-' + status;
+
+      if (data.business_name) {
+        currentBiz.style.display = 'block';
+        currentBizName.textContent = data.business_name;
+        document.getElementById('regBizName').value = data.business_name;
+      } else {
+        currentBiz.style.display = 'none';
+        document.getElementById('regBizName').value = '';
+      }
+
+      showToast('Card loaded.');
+    });
+
+    // Register Card Form Submit
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = parseInt(document.getElementById('cardCode').value, 10);
+      const pin = document.getElementById('batchPin').value.trim();
+      const mode = document.getElementById('regMode').value;
+      const bizName = document.getElementById('regBizName').value.trim();
+      const category = document.getElementById('regCategory').value;
+      const rawUrl = document.getElementById('regMapsUrl').value.trim();
+
+      showToast('Optimizing review link...');
+      let finalReviewUrl = rawUrl;
+
+      // Convert via Edge Function if applicable
+      try {
+        const { data: edgeData, error: edgeErr } = await supabaseClient.functions.invoke('generate-review-link', {
+          body: { mapsUrl: rawUrl }
+        });
+        if (!edgeErr && edgeData && edgeData.reviewUrl) {
+          finalReviewUrl = edgeData.reviewUrl;
+        }
+      } catch (err) {
+        console.warn('Edge function skipped, using direct URL:', err);
+      }
+
+      showToast('Saving to card...');
+      const { data, error } = await supabaseClient.rpc('register_card', {
+        p_code: code,
+        p_password: pin,
+        p_business_name: bizName,
+        p_destination_url: finalReviewUrl,
+        p_category: category,
+        p_mode: mode
+      });
+
+      if (error || !data?.success) {
+        showToast(data?.message || error?.message || 'Failed to register card.', true);
+        return;
+      }
+
+      showToast(`Success! Card ${code} is now set up as ${mode}. Test tap at: /r/${code}`);
+      document.getElementById('checkCardBtn').click();
+    });
+
+    // Confirm Deregister
+    document.getElementById('confirmDeregisterBtn').addEventListener('click', async () => {
+      const code = parseInt(document.getElementById('cardCode').value, 10);
+      const pin = document.getElementById('batchPin').value.trim();
+
+      showToast('Deregistering card...');
+      const { data, error } = await supabaseClient.rpc('deregister_card', {
+        p_code: code,
+        p_password: pin
+      });
+
+      if (error || !data?.success) {
+        showToast(data?.message || error?.message || 'Failed to deregister.', true);
+        return;
+      }
+
+      showToast(`Card ${code} successfully cleared and reset to unregistered!`);
+      document.getElementById('checkCardBtn').click();
+    });
+  </script>
+</body>
+</html>
