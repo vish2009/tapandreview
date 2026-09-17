@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Card Portal — TapToReview</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="assets/taptoreview-logo.svg" type="image/svg+xml">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     .portal-card {
@@ -68,8 +69,8 @@
   <div class="container">
     <div class="portal-card">
       <div style="text-align: center; margin-bottom: 24px;">
-        <a href="/" class="logo">
-          <img src="/assets/taptoreview.svg" alt="TapToReview.in" class="logo-img">
+        <a href="/" class="logo" style="display: inline-block;">
+          <img src="assets/taptoreview-logo.svg" alt="TapToReview.in" class="logo-img" style="height: 42px; width: auto; display: block; margin: 0 auto;">
         </a>
         <h2 style="margin-top: 14px; font-size: 1.4rem;">Reseller Card Portal</h2>
         <p class="micro">Assign, demo, or wipe reusable cards</p>
@@ -231,10 +232,17 @@
       // Populate City
       document.getElementById('regCity').value = data.city_location || '';
 
-      // Populate Source URL (preserves original Maps link)
+      // Populate Source URL (preserve original Maps link; never force review modal URL onto input)
       loadedSourceUrl = data.source_url || '';
       loadedDestinationUrl = data.destination_url || '';
-      document.getElementById('regMapsUrl').value = loadedSourceUrl || loadedDestinationUrl || '';
+
+      if (loadedSourceUrl) {
+        document.getElementById('regMapsUrl').value = loadedSourceUrl;
+      } else if (loadedDestinationUrl && !loadedDestinationUrl.includes('search.google.com/local/writereview')) {
+        document.getElementById('regMapsUrl').value = loadedDestinationUrl;
+      } else {
+        document.getElementById('regMapsUrl').value = '';
+      }
 
       // Populate Category
       if (data.category) {
@@ -262,9 +270,12 @@
 
       let finalReviewUrl = inputUrl;
 
-      // Only resolve via Edge Function if URL was edited or not resolved before
-      if (inputUrl === loadedSourceUrl && loadedDestinationUrl) {
-        finalReviewUrl = loadedDestinationUrl;
+      // Only resolve via Edge Function if URL was edited or is not an existing review link
+      if (
+        (inputUrl === loadedSourceUrl && loadedDestinationUrl) ||
+        inputUrl.includes('search.google.com/local/writereview')
+      ) {
+        finalReviewUrl = loadedDestinationUrl || inputUrl;
       } else {
         showToast('Resolving direct review link...');
         try {
