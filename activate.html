@@ -25,9 +25,18 @@
       text-transform: uppercase;
       margin-bottom: 16px;
     }
-    .badge-unregistered { background: rgba(148, 163, 184, 0.2); color: var(--muted); }
-    .badge-demo { background: rgba(212, 175, 55, 0.2); color: var(--gold); }
-    .badge-active { background: rgba(2, 132, 199, 0.2); color: var(--cyan); }
+    .badge-unregistered {
+      background: rgba(148, 163, 184, 0.2);
+      color: var(--muted);
+    }
+    .badge-demo {
+      background: rgba(212, 175, 55, 0.2);
+      color: var(--gold);
+    }
+    .badge-active {
+      background: rgba(2, 132, 199, 0.2);
+      color: var(--cyan);
+    }
     .tab-group {
       display: flex;
       gap: 10px;
@@ -110,14 +119,17 @@
               <option value="active">Active (Sold to client)</option>
             </select>
           </label>
+
           <label>
             <span>Business Name</span>
             <input type="text" id="regBizName" placeholder="e.g. Hotel Sandeep" required>
           </label>
+
           <label>
             <span>City / Location</span>
             <input type="text" id="regCity" placeholder="e.g. Pune, Maharashtra" required>
           </label>
+
           <label>
             <span>Business Category</span>
             <select id="regCategory" required>
@@ -129,10 +141,26 @@
               <option value="Other">Other</option>
             </select>
           </label>
+
           <label>
             <span>Google Maps / Business URL</span>
             <input type="url" id="regMapsUrl" placeholder="https://maps.google.com/..." required>
           </label>
+
+          <!-- Optional WhatsApp Field -->
+          <label>
+            <span>WhatsApp Number or Channel (Optional)</span>
+            <input type="text" id="regWhatsapp" placeholder="e.g. 9876543210 or channel link">
+            <small class="micro" style="color: var(--muted); margin-top: 4px;">Leaves blank if unavailable. 10-digit numbers auto-format with greeting "hii".</small>
+          </label>
+
+          <!-- Optional Instagram Field -->
+          <label>
+            <span>Instagram Profile URL or Handle (Optional)</span>
+            <input type="text" id="regInstagram" placeholder="e.g. @hotel_sandeep or full URL">
+            <small class="micro" style="color: var(--muted); margin-top: 4px;">Leaves blank if unavailable.</small>
+          </label>
+
           <button type="submit" class="btn btn-primary" id="saveCardBtn" style="justify-content: center; margin-top: 10px;">Save & Activate Card</button>
         </form>
 
@@ -171,6 +199,16 @@
       toast.style.display = 'block';
       toast.style.borderColor = isError ? '#dc2626' : 'var(--cyan)';
       toast.style.background = isError ? 'rgba(220, 38, 38, 0.15)' : 'rgba(2, 132, 199, 0.12)';
+    }
+
+    // Helper: Client-side Instagram handle sanitization
+    function sanitizeInstagram(input) {
+      if (!input) return null;
+      let val = input.trim();
+      if (!val) return null;
+      if (val.startsWith('http://') || val.startsWith('https://')) return val;
+      val = val.replace(/^@/, '').replace(/^instagram\.com\//, '').replace(/\/$/, '').trim();
+      return val ? `https://instagram.com/${val}` : null;
     }
 
     const tabRegisterBtn = document.getElementById('tabRegisterBtn');
@@ -232,10 +270,9 @@
       // Populate City
       document.getElementById('regCity').value = data.city_location || '';
 
-      // Populate Source URL (preserve original Maps link; never force review modal URL onto input)
+      // Populate Source URL
       loadedSourceUrl = data.source_url || '';
       loadedDestinationUrl = data.destination_url || '';
-
       if (loadedSourceUrl) {
         document.getElementById('regMapsUrl').value = loadedSourceUrl;
       } else if (loadedDestinationUrl && !loadedDestinationUrl.includes('search.google.com/local/writereview')) {
@@ -254,12 +291,17 @@
         document.getElementById('regMode').value = data.status;
       }
 
+      // Populate WhatsApp & Instagram
+      document.getElementById('regWhatsapp').value = data.whatsapp_url || '';
+      document.getElementById('regInstagram').value = data.instagram_url || '';
+
       showToast('Card loaded.');
     });
 
     // Save & Activate
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const code = parseInt(document.getElementById('cardCode').value, 10);
       const pin = document.getElementById('batchPin').value.trim();
       const mode = document.getElementById('regMode').value;
@@ -267,10 +309,11 @@
       const city = document.getElementById('regCity').value.trim();
       const category = document.getElementById('regCategory').value;
       const inputUrl = document.getElementById('regMapsUrl').value.trim();
+      const rawWhatsapp = document.getElementById('regWhatsapp').value.trim();
+      const rawInstagram = document.getElementById('regInstagram').value.trim();
 
+      // 1. Resolve direct Google review link
       let finalReviewUrl = inputUrl;
-
-      // Only resolve via Edge Function if URL was edited or is not an existing review link
       if (
         (inputUrl === loadedSourceUrl && loadedDestinationUrl) ||
         inputUrl.includes('search.google.com/local/writereview')
@@ -280,13 +323,8 @@
         showToast('Resolving direct review link...');
         try {
           const { data: edgeData, error: edgeErr } = await supabaseClient.functions.invoke('generate-review-link', {
-            body: {
-              url: inputUrl,
-              domain: window.location.hostname,
-              platform: 'google'
-            }
+            body: { url: inputUrl, domain: window.location.hostname, platform: 'google' }
           });
-
           if (!edgeErr && edgeData?.success && edgeData?.destination_url) {
             finalReviewUrl = edgeData.destination_url;
           }
@@ -295,6 +333,32 @@
         }
       }
 
+      // 2. Resolve WhatsApp link via Edge Function (if provided)
+      let finalWhatsappUrl = null;
+      if (rawWhatsapp) {
+        showToast('Formatting WhatsApp link...');
+        try {
+          const { data: waData, error: waErr } = await supabaseClient.functions.invoke('generate-whatsapp-link', {
+            body: { input: rawWhatsapp }
+          });
+          if (!waErr && waData?.success && waData?.destination_url) {
+            finalWhatsappUrl = waData.destination_url;
+          } else {
+            const digits = rawWhatsapp.replace(/\D/g, '');
+            if (digits) {
+              const formatted = digits.length === 10 ? `91${digits}` : digits;
+              finalWhatsappUrl = `https://wa.me/${formatted}?text=hii`;
+            }
+          }
+        } catch (err) {
+          console.warn('WhatsApp Edge Function fallback:', err);
+        }
+      }
+
+      // 3. Resolve Instagram link (client-side sanitization)
+      const finalInstagramUrl = sanitizeInstagram(rawInstagram);
+
+      // 4. Save to Database
       showToast('Saving to card...');
       const { data, error } = await supabaseClient.rpc('register_card', {
         p_code: code,
@@ -304,7 +368,9 @@
         p_category: category,
         p_mode: mode,
         p_source_url: inputUrl,
-        p_city_location: city
+        p_city_location: city,
+        p_whatsapp_url: finalWhatsappUrl,
+        p_instagram_url: finalInstagramUrl
       });
 
       if (error || !data?.success) {
