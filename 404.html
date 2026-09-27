@@ -31,32 +31,17 @@
       text-align: center;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     }
-    .brand-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #d4af37;
-      background: rgba(212, 175, 55, 0.12);
-      border: 1px solid rgba(212, 175, 55, 0.25);
-      padding: 5px 14px;
-      border-radius: 999px;
-      margin-bottom: 18px;
-    }
     .biz-name {
-      font-size: 1.65rem;
+      font-size: 1.7rem;
       font-weight: 800;
-      margin: 0 0 6px 0;
+      margin: 0 0 8px 0;
       line-height: 1.25;
       color: #ffffff;
     }
     .biz-location {
       font-size: 0.95rem;
       color: #94a3b8;
-      margin: 0 0 26px 0;
+      margin: 0 0 28px 0;
     }
     .actions-stack {
       display: flex;
@@ -124,7 +109,6 @@
 
     <!-- Ready State -->
     <div id="bizView" style="display: none;">
-      <span class="brand-badge" id="cardCategory">Verified Business</span>
       <h1 class="biz-name" id="bizName">Business Name</h1>
       <p class="biz-location" id="bizLocation"></p>
 
@@ -148,9 +132,11 @@
         </a>
       </div>
 
+      <!-- Reseller white-label: powered-by link disabled
       <div class="footer-note">
         Powered by <a href="/">TapToReview.in</a>
       </div>
+      -->
     </div>
   </div>
 
@@ -226,7 +212,6 @@
 
       // Render business micro-landing page
       document.getElementById('bizName').textContent = bizData.business_name || 'Our Channels';
-      document.getElementById('cardCategory').textContent = bizData.category || 'TapToReview';
       document.getElementById('bizLocation').textContent = bizData.city_location || '';
       document.getElementById('btnGoogle').href = bizData.destination_url;
 
