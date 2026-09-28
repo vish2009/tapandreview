@@ -37,6 +37,10 @@
       margin: 0 0 8px 0;
       line-height: 1.25;
       color: #ffffff;
+      cursor: default;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
     .biz-location {
       font-size: 0.95rem;
@@ -107,7 +111,7 @@
       <span>Connecting to card...</span>
     </div>
 
-    <!-- Ready State -->
+    <!-- Ready State (Micro-Landing Page) -->
     <div id="bizView" style="display: none;">
       <h1 class="biz-name" id="bizName">Business Name</h1>
       <p class="biz-location" id="bizLocation"></p>
@@ -170,7 +174,7 @@
         // Query card details via get_card_details RPC
         const { data, error } = await supabaseClient.rpc('get_card_details', { p_code: cardCode });
 
-        // Unassigned or invalid card -> Route to activate
+        // Unassigned or invalid card -> Route straight to activate
         if (error || !data || data.status === 'unregistered' || !data.destination_url) {
           window.location.replace(`/activate?code=${cardCode}`);
           return;
@@ -215,7 +219,8 @@
       }
 
       // Render business micro-landing page
-      document.getElementById('bizName').textContent = bizData.business_name || 'Our Channels';
+      const bizTitleEl = document.getElementById('bizName');
+      bizTitleEl.textContent = bizData.business_name || 'Our Channels';
       document.getElementById('bizLocation').textContent = bizData.city_location || '';
       document.getElementById('btnGoogle').href = bizData.destination_url;
 
@@ -232,6 +237,27 @@
         igBtn.href = bizData.instagram_url;
         igBtn.style.display = 'flex';
       }
+
+      // Invisible triple-tap on business name to open reseller portal
+      let tapCount = 0;
+      let tapTimer = null;
+      bizTitleEl.addEventListener('click', () => {
+        tapCount++;
+        clearTimeout(tapTimer);
+
+        if (tapCount === 3) {
+          if (cardCode !== null) {
+            window.location.href = `/activate?code=${cardCode}`;
+          } else {
+            window.location.href = '/activate';
+          }
+          return;
+        }
+
+        tapTimer = setTimeout(() => {
+          tapCount = 0;
+        }, 1200);
+      });
 
       document.getElementById('loadingView').style.display = 'none';
       document.getElementById('bizView').style.display = 'block';
