@@ -147,19 +147,19 @@
             <input type="url" id="regMapsUrl" placeholder="https://maps.google.com/..." required>
           </label>
 
-          <!-- Optional WhatsApp Field -->
+          <!-- Hidden until multi-channel physical cards are deployed
           <label>
             <span>WhatsApp Number or Channel (Optional)</span>
             <input type="text" id="regWhatsapp" placeholder="e.g. 9876543210 or channel link">
             <small class="micro" style="color: var(--muted); margin-top: 4px;">Leaves blank if unavailable. 10-digit numbers auto-format with greeting "hii".</small>
           </label>
 
-          <!-- Optional Instagram Field -->
           <label>
             <span>Instagram Profile URL or Handle (Optional)</span>
             <input type="text" id="regInstagram" placeholder="e.g. @hotel_sandeep or full URL">
             <small class="micro" style="color: var(--muted); margin-top: 4px;">Leaves blank if unavailable.</small>
           </label>
+          -->
 
           <button type="submit" class="btn btn-primary" id="saveCardBtn" style="justify-content: center; margin-top: 10px;">Save & Activate Card</button>
         </form>
@@ -291,9 +291,11 @@
         document.getElementById('regMode').value = data.status;
       }
 
-      // Populate WhatsApp & Instagram
-      document.getElementById('regWhatsapp').value = data.whatsapp_url || '';
-      document.getElementById('regInstagram').value = data.instagram_url || '';
+      // Populate WhatsApp & Instagram (with null safety checks)
+      const regWhatsappInput = document.getElementById('regWhatsapp');
+      const regInstagramInput = document.getElementById('regInstagram');
+      if (regWhatsappInput) regWhatsappInput.value = data.whatsapp_url || '';
+      if (regInstagramInput) regInstagramInput.value = data.instagram_url || '';
 
       showToast('Card loaded.');
     });
@@ -309,8 +311,11 @@
       const city = document.getElementById('regCity').value.trim();
       const category = document.getElementById('regCategory').value;
       const inputUrl = document.getElementById('regMapsUrl').value.trim();
-      const rawWhatsapp = document.getElementById('regWhatsapp').value.trim();
-      const rawInstagram = document.getElementById('regInstagram').value.trim();
+      
+      const regWhatsappInput = document.getElementById('regWhatsapp');
+      const regInstagramInput = document.getElementById('regInstagram');
+      const rawWhatsapp = regWhatsappInput ? regWhatsappInput.value.trim() : '';
+      const rawInstagram = regInstagramInput ? regInstagramInput.value.trim() : '';
 
       // 1. Resolve direct Google review link
       let finalReviewUrl = inputUrl;
