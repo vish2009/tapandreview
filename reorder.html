@@ -1,0 +1,64 @@
+<form id="resellerOrderForm" class="form-grid">
+  <label>
+    <span>Reseller Name</span>
+    <input type="text" id="roName" placeholder="Your registered name" required>
+  </label>
+  <label>
+    <span>Reseller PIN</span>
+    <input type="password" id="roPass" placeholder="Your account password" required>
+  </label>
+  <label>
+    <span>Card Quantity</span>
+    <select id="roQty" required>
+      <option value="25">25 Cards</option>
+      <option value="50" selected>50 Cards</option>
+      <option value="100">100 Cards</option>
+      <option value="250">250 Cards</option>
+    </select>
+  </label>
+  <label>
+    <span>Notes / Delivery Address (Optional)</span>
+    <textarea id="roNotes" rows="2" placeholder="Any dispatch instructions"></textarea>
+  </label>
+  <button type="submit" id="roBtn" class="btn btn-primary" style="justify-content: center;">
+    Submit Card Order
+  </button>
+</form>
+
+<script>
+document.getElementById('resellerOrderForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('roName').value.trim();
+  const pass = document.getElementById('roPass').value.trim();
+  const qty = parseInt(document.getElementById('roQty').value, 10);
+  const notes = document.getElementById('roNotes').value.trim();
+  const btn = document.getElementById('roBtn');
+
+  btn.disabled = true;
+  btn.textContent = 'Verifying & placing order...';
+
+  const { data, error } = await supabaseClient.rpc('reseller_create_order', {
+    p_reseller_name: name,
+    p_password: pass,
+    p_card_quantity: qty,
+    p_notes: notes
+  });
+
+  if (error || !data?.success) {
+    alert(data?.message || 'Failed to submit order. Please check your credentials.');
+    btn.disabled = false;
+    btn.textContent = 'Submit Card Order';
+    return;
+  }
+
+  // Order saved in DB! Now open WhatsApp to alert you directly:
+  const ownerPhone = '917620952720';
+  const msg = `Hi Vishal, card order placed!\nReseller: ${name}\nQuantity: ${qty} cards\nNotes: ${notes || 'None'}`;
+  window.open(`https://wa.me/${ownerPhone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+
+  alert('Order placed successfully!');
+  document.getElementById('resellerOrderForm').reset();
+  btn.disabled = false;
+  btn.textContent = 'Submit Card Order';
+});
+</script>
