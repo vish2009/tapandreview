@@ -250,15 +250,15 @@
         </div>
       </div>
 
-      <form id="gateForm" class="form-grid">
+      <form id="gateForm" class="form-grid" autocomplete="off">
         <div class="form-row">
           <div class="form-group">
             <label for="cardCodeInput">Physical Card Number</label>
-            <input type="number" id="cardCodeInput" placeholder="e.g. 21" min="1" required autofocus>
+            <input type="number" id="cardCodeInput" placeholder="e.g. 1" min="1" required autofocus autocomplete="off">
           </div>
           <div class="form-group">
             <label for="resellerPinInput">Reseller Secret PIN</label>
-            <input type="password" id="resellerPinInput" placeholder="Enter partner PIN" required>
+            <input type="password" id="resellerPinInput" placeholder="Enter partner PIN" required autocomplete="new-password">
           </div>
         </div>
 
@@ -307,11 +307,11 @@
         </div>
 
         <div class="form-group">
-          <label for="destUrlInput">Google Review Destination URL</label>
-          <input type="url" id="destUrlInput" placeholder="https://search.google.com/local/writereview?..." required>
+          <label for="destUrlInput">Google Maps URL or Review Link</label>
+          <input type="url" id="destUrlInput" placeholder="Paste Google Maps URL or write-review link" required>
         </div>
 
-        <!-- Social Channels (Commented out until card restock)
+        <!-- Social Channels (Reserved for future multi-link cards)
         <div class="form-group">
           <label for="whatsappInput">WhatsApp Connect Link (Optional)</label>
           <input type="url" id="whatsappInput" placeholder="https://wa.me/91XXXXXXXXXX?text=Hi">
@@ -360,18 +360,15 @@
     const btnResetCard = document.getElementById('btnResetCard');
     const setupToast = document.getElementById('setupToast');
 
-    // Pre-fill card code if URL has ?code=21
+    // Pre-fill card code if URL has ?code=X
     const urlParams = new URLSearchParams(window.location.search);
     const paramCode = urlParams.get('code');
     if (paramCode && /^\d+$/.test(paramCode)) {
       cardCodeInput.value = paramCode;
     }
 
-    // Auto-restore reseller PIN from session for quick on-site setups
-    const cachedPin = sessionStorage.getItem('ttr_reseller_pass');
-    if (cachedPin) {
-      resellerPinInput.value = cachedPin;
-    }
+    // Explicitly clear password field on refresh to prevent autofill persistence
+    resellerPinInput.value = '';
 
     function showToast(el, msg, isError = false) {
       el.textContent = msg;
@@ -393,7 +390,6 @@
       btnUnlock.textContent = 'Verifying PIN...';
       gateToast.style.display = 'none';
 
-      // Secure password-gated check
       const { data, error } = await supabaseClient.rpc('verify_and_get_card', {
         p_code: code,
         p_password: pin
@@ -405,13 +401,9 @@
       // Wrong PIN or invalid batch: Keep setup locked, reveal zero details
       if (error || !data?.success) {
         setupCard.style.display = 'none';
-        showToast(gateToast, data?.message || 'Invalid reseller PIN or unauthorized card.', true);
+        showToast(gateToast, data?.message || error?.message || 'Invalid reseller PIN or unauthorized card.', true);
         return;
       }
-
-      // Valid PIN: Remember PIN for subsequent cards
-      sessionStorage.setItem('ttr_reseller_pass', pin);
-      localStorage.setItem('ttr_reseller_mode', 'true');
 
       // Populate & reveal setup form
       cardHeadingText.textContent = `Card #${code} Configuration`;
@@ -447,7 +439,6 @@
         showToast(setupToast, 'Card unlocked. You can now edit its destination or reset it.');
       }
 
-      // Smooth scroll to form on mobile
       setupCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
@@ -459,7 +450,7 @@
       const biz = bizNameInput.value.trim();
       const city = cityLocationInput.value.trim();
       const cat = categoryInput.value;
-      const dest = destUrlInput.value.trim();
+      const rawDest = destUrlInput.value.trim();
 
       const regWhatsappInput = document.getElementById('whatsappInput');
       const regInstagramInput = document.getElementById('instagramInput');
@@ -467,6 +458,30 @@
       const igVal = regInstagramInput ? (regInstagramInput.value.trim() || null) : null;
 
       btnSaveCard.disabled = true;
+      btnSaveCard.textContent = 'Generating direct review link...';
+      showToast(setupToast, 'Resolving direct 5-star Google review link...');
+
+      let finalGoogleUrl = rawDest;
+
+      // Invoke generate-review-link Edge Function to resolve Place ID
+      try {
+        const { data: linkData, error: linkErr } = await supabaseClient.functions.invoke('generate-review-link', {
+          body: {
+            url: rawDest,
+            domain: window.location.hostname,
+            platform: 'google'
+          }
+        });
+
+        if (!linkErr && linkData?.success && linkData?.destination_url) {
+          finalGoogleUrl = linkData.destination_url;
+        } else {
+          console.warn('Could not transform review link, using raw input:', linkErr || linkData);
+        }
+      } catch (err) {
+        console.warn('Edge function invoke error, falling back to raw input:', err);
+      }
+
       btnSaveCard.textContent = 'Saving details...';
       showToast(setupToast, 'Registering card in database...');
 
@@ -474,7 +489,7 @@
         p_code: code,
         p_password: pin,
         p_business_name: biz,
-        p_destination_url: dest,
+        p_destination_url: finalGoogleUrl,
         p_category: cat,
         p_mode: 'active',
         p_source_url: `${window.location.origin}/r/${code}`,
@@ -491,10 +506,13 @@
         return;
       }
 
+      // Update the input field with the resolved write-review URL
+      destUrlInput.value = finalGoogleUrl;
+
       statusBadge.textContent = '● Active / Registered';
       statusBadge.className = 'badge badge-active';
       btnResetCard.style.display = 'inline-flex';
-      showToast(setupToast, `Success! Card #${code} is now live.`);
+      showToast(setupToast, `Success! Card #${code} is live with direct review popup.`);
     });
 
     // 3. Reset / Wipe Card
@@ -518,11 +536,10 @@
       btnResetCard.textContent = 'Wipe / Reset Card to Available';
 
       if (error || !data?.success) {
-        showToast(setupToast, data?.message || 'Failed to reset card.', true);
+        showToast(setupToast, data?.message || error?.message || 'Failed to reset card.', true);
         return;
       }
 
-      // Reset form view back to unregistered state
       statusBadge.textContent = '● Available';
       statusBadge.className = 'badge badge-unregistered';
       bizNameInput.value = '';
@@ -533,11 +550,6 @@
       btnResetCard.style.display = 'none';
       showToast(setupToast, `Card #${code} has been wiped and is now available.`);
     });
-
-    // Auto-unlock if both card code and session PIN are present
-    if (paramCode && cachedPin) {
-      gateForm.dispatchEvent(new Event('submit'));
-    }
   </script>
 </body>
 </html>
