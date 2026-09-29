@@ -3,180 +3,338 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Card Portal — TapToReview</title>
-  <link rel="stylesheet" href="/css/styles.css">
-  <link rel="icon" href="assets/taptoreview-logo.svg" type="image/svg+xml">
+  <title>Card Activation & Setup — TapToReview</title>
+  <link rel="icon" href="/assets/taptoreview-logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    .portal-card {
-      max-width: 520px;
-      margin: 40px auto;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(212, 175, 55, 0.25);
-      border-radius: var(--radius);
-      padding: 28px;
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(17, 24, 39, 0.78);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --gold: #d4af37;
+      --gold-hover: #f0c96b;
+      --gold-glow: rgba(212, 175, 55, 0.22);
+      --text: #ffffff;
+      --text-muted: #94a3b8;
+      --input-bg: #111827;
+      --input-border: rgba(255, 255, 255, 0.12);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .badge {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      margin-bottom: 16px;
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #172338 0%, var(--bg) 75%);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      padding: 36px 16px 80px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
-    .badge-unregistered {
-      background: rgba(148, 163, 184, 0.2);
-      color: var(--muted);
+
+    .wrap {
+      max-width: 560px;
+      margin: 0 auto;
     }
-    .badge-demo {
-      background: rgba(212, 175, 55, 0.2);
-      color: var(--gold);
+
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
     }
-    .badge-active {
-      background: rgba(2, 132, 199, 0.2);
-      color: var(--cyan);
+
+    .logo-img {
+      height: 40px;
+      margin: 0 auto 10px;
+      display: block;
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
     }
-    .tab-group {
-      display: flex;
-      gap: 10px;
+
+    .title {
+      font-size: 1.65rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
       margin-bottom: 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding-bottom: 12px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
     }
-    .tab-btn {
-      background: transparent;
-      border: 0;
-      color: var(--muted);
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Forms */
+    .form-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.94rem;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-glow);
+    }
+
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      background-size: 16px;
+      padding-right: 40px;
+    }
+
+    select option {
+      background: #0f172a;
+      color: #fff;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 0.92rem;
       font-weight: 700;
       cursor: pointer;
-      padding: 6px 12px;
-      border-radius: 6px;
-    }
-    .tab-btn.active {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text);
-    }
-    .btn-danger {
-      background: #dc2626;
-      color: #fff;
+      transition: var(--transition);
       border: 0;
+      text-decoration: none;
     }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold) 0%, #b89528 100%);
+      color: #0b0f19;
+      box-shadow: 0 4px 16px var(--gold-glow);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+    }
+
     .btn-danger:hover {
-      background: #b91c1c;
+      background: rgba(239, 68, 68, 0.22);
     }
-    .status-box {
-      background: rgba(0, 0, 0, 0.3);
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-bottom: 20px;
+
+    /* Status Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .badge-unregistered {
+      background: rgba(2, 132, 199, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(2, 132, 199, 0.3);
+    }
+
+    .badge-active {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .toast-box {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: var(--radius-sm);
       font-size: 0.9rem;
+      display: none;
+    }
+
+    @media (max-width: 500px) {
+      .form-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="portal-card">
-      <div style="text-align: center; margin-bottom: 24px;">
-        <a href="/" class="logo" style="display: inline-block;">
-          <img src="assets/taptoreview-logo.svg" alt="TapToReview.in" class="logo-img" style="height: 42px; width: auto; display: block; margin: 0 auto;">
-        </a>
-        <h2 style="margin-top: 14px; font-size: 1.4rem;">Reseller Card Portal</h2>
-        <p class="micro">Assign, demo, or wipe reusable cards</p>
-      </div>
 
-      <!-- Step 1: Card Identifier & Password -->
-      <div class="form-grid">
-        <label>
-          <span>Card Number (e.g. 14 for /r/14)</span>
-          <input type="number" id="cardCode" placeholder="Enter card ID">
-        </label>
-        <label>
-          <span>Batch Password / Reseller PIN</span>
-          <input type="password" id="batchPin" placeholder="Enter batch password">
-        </label>
-        <button type="button" class="btn btn-outline" id="checkCardBtn" style="justify-content: center;">Load Card Status</button>
-      </div>
+  <div class="wrap">
 
-      <!-- Step 2: Card Management Area -->
-      <div id="cardDetailsArea" style="display: none; margin-top: 24px;">
-        <div class="status-box">
-          <div>Status: <span id="cardStatusBadge" class="badge"></span></div>
-          <div id="currentBusiness" class="micro" style="display: none;">Assigned to: <strong id="currentBizName"></strong></div>
-        </div>
+    <header class="header">
+      <a href="/">
+        <img src="/assets/taptoreview-logo.svg" alt="TapToReview.in" class="logo-img">
+      </a>
+      <h1 class="title">Card Activation & Setup</h1>
+      <p class="subtitle">Assign business review destinations to NFC cards</p>
+    </header>
 
-        <div class="tab-group">
-          <button type="button" class="tab-btn active" id="tabRegisterBtn">Register / Demo</button>
-          <button type="button" class="tab-btn" id="tabDeregisterBtn">Deregister / Reset</button>
-        </div>
-
-        <!-- Mode A: Registration / Demo Form -->
-        <form id="registerForm" class="form-grid">
-          <label>
-            <span>Assignment Mode</span>
-            <select id="regMode">
-              <option value="demo">Demo Mode (Temporary testing)</option>
-              <option value="active">Active (Sold to client)</option>
-            </select>
-          </label>
-
-          <label>
-            <span>Business Name</span>
-            <input type="text" id="regBizName" placeholder="e.g. Hotel Sandeep" required>
-          </label>
-
-          <label>
-            <span>City / Location</span>
-            <input type="text" id="regCity" placeholder="e.g. Pune, Maharashtra" required>
-          </label>
-
-          <label>
-            <span>Business Category</span>
-            <select id="regCategory" required>
-              <option value="Cafes & Restaurants">Cafes & Restaurants</option>
-              <option value="Salons & Spas">Salons & Spas</option>
-              <option value="Clinics & Healthcare">Clinics & Healthcare</option>
-              <option value="Retail Stores">Retail Stores</option>
-              <option value="Fitness & Gyms">Fitness & Gyms</option>
-              <option value="Other">Other</option>
-            </select>
-          </label>
-
-          <label>
-            <span>Google Maps / Business URL</span>
-            <input type="url" id="regMapsUrl" placeholder="https://maps.google.com/..." required>
-          </label>
-
-          <!-- Hidden until multi-channel physical cards are deployed
-          <label>
-            <span>WhatsApp Number or Channel (Optional)</span>
-            <input type="text" id="regWhatsapp" placeholder="e.g. 9876543210 or channel link">
-            <small class="micro" style="color: var(--muted); margin-top: 4px;">Leaves blank if unavailable. 10-digit numbers auto-format with greeting "hii".</small>
-          </label>
-
-          <label>
-            <span>Instagram Profile URL or Handle (Optional)</span>
-            <input type="text" id="regInstagram" placeholder="e.g. @hotel_sandeep or full URL">
-            <small class="micro" style="color: var(--muted); margin-top: 4px;">Leaves blank if unavailable.</small>
-          </label>
-          -->
-
-          <button type="submit" class="btn btn-primary" id="saveCardBtn" style="justify-content: center; margin-top: 10px;">Save & Activate Card</button>
-        </form>
-
-        <!-- Mode B: Deregister / Wipe -->
-        <div id="deregisterArea" style="display: none;">
-          <p class="micro" style="margin-bottom: 16px;">
-            Deregistering will unlink this card, clear destination URLs, and mark the card as unassigned so it can be reused immediately.
-          </p>
-          <button type="button" class="btn btn-danger" id="confirmDeregisterBtn" style="justify-content: center; width: 100%;">
-            Confirm Deregister & Wipe
-          </button>
+    <!-- Step 1: Authentication & Card Gate -->
+    <div class="card" id="gateCard">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          Card Authorization Gate
         </div>
       </div>
 
-      <div id="portalMessage" class="toast" style="display: none;"></div>
+      <form id="gateForm" class="form-grid">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cardCodeInput">Physical Card Number</label>
+            <input type="number" id="cardCodeInput" placeholder="e.g. 21" min="1" required autofocus>
+          </div>
+          <div class="form-group">
+            <label for="resellerPinInput">Reseller Secret PIN</label>
+            <input type="password" id="resellerPinInput" placeholder="Enter partner PIN" required>
+          </div>
+        </div>
+
+        <button type="submit" id="btnUnlock" class="btn btn-primary" style="width: 100%;">
+          Verify PIN & Unlock Card
+        </button>
+      </form>
+
+      <div id="gateToast" class="toast-box"></div>
     </div>
+
+    <!-- Step 2: Configuration Form (Hidden until verified) -->
+    <div class="card" id="setupCard" style="display: none;">
+      <div class="card-header">
+        <div class="card-title">
+          <span id="cardHeadingText">Card Configuration</span>
+        </div>
+        <span id="statusBadge" class="badge"></span>
+      </div>
+
+      <form id="cardSetupForm" class="form-grid">
+        <div class="form-group">
+          <label for="bizNameInput">Business Name</label>
+          <input type="text" id="bizNameInput" placeholder="e.g. Irani Cafe" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cityLocationInput">City / Area Location</label>
+            <input type="text" id="cityLocationInput" placeholder="e.g. Kalyani Nagar, Pune" required>
+          </div>
+
+          <div class="form-group">
+            <label for="categoryInput">Business Category</label>
+            <select id="categoryInput" required>
+              <option value="Restaurant & Cafe">Restaurant & Cafe</option>
+              <option value="Salon & Spa">Salon & Spa</option>
+              <option value="Healthcare & Clinic">Healthcare & Clinic</option>
+              <option value="Retail & Shopping">Retail & Shopping</option>
+              <option value="Professional Services">Professional Services</option>
+              <option value="Auto & Garage">Auto & Garage</option>
+              <option value="Fitness & Sports">Fitness & Sports</option>
+              <option value="Other" selected>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="destUrlInput">Google Review Destination URL</label>
+          <input type="url" id="destUrlInput" placeholder="https://search.google.com/local/writereview?..." required>
+        </div>
+
+        <!-- Social Channels (Commented out until card restock)
+        <div class="form-group">
+          <label for="whatsappInput">WhatsApp Connect Link (Optional)</label>
+          <input type="url" id="whatsappInput" placeholder="https://wa.me/91XXXXXXXXXX?text=Hi">
+        </div>
+
+        <div class="form-group">
+          <label for="instagramInput">Instagram Profile Link (Optional)</label>
+          <input type="url" id="instagramInput" placeholder="https://instagram.com/yourhandle">
+        </div>
+        -->
+
+        <button type="submit" id="btnSaveCard" class="btn btn-primary" style="margin-top: 6px;">
+          Save & Register Card
+        </button>
+
+        <button type="button" id="btnResetCard" class="btn btn-danger" style="display: none; margin-top: 2px;">
+          Wipe / Reset Card to Available
+        </button>
+      </form>
+
+      <div id="setupToast" class="toast-box"></div>
+    </div>
+
   </div>
 
   <script>
@@ -184,228 +342,202 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphdnNwbXFqbXJpbmZ4ZW5ib3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTkzOTksImV4cCI6MjEwNDAzNTM5OX0.7K-EFRRgLmLOh8BltHDH0qh61TDLbLlzCjJ5jBMXCc8';
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    let loadedSourceUrl = '';
-    let loadedDestinationUrl = '';
+    const gateForm = document.getElementById('gateForm');
+    const cardCodeInput = document.getElementById('cardCodeInput');
+    const resellerPinInput = document.getElementById('resellerPinInput');
+    const btnUnlock = document.getElementById('btnUnlock');
+    const gateToast = document.getElementById('gateToast');
 
+    const setupCard = document.getElementById('setupCard');
+    const cardHeadingText = document.getElementById('cardHeadingText');
+    const statusBadge = document.getElementById('statusBadge');
+    const cardSetupForm = document.getElementById('cardSetupForm');
+    const bizNameInput = document.getElementById('bizNameInput');
+    const cityLocationInput = document.getElementById('cityLocationInput');
+    const categoryInput = document.getElementById('categoryInput');
+    const destUrlInput = document.getElementById('destUrlInput');
+    const btnSaveCard = document.getElementById('btnSaveCard');
+    const btnResetCard = document.getElementById('btnResetCard');
+    const setupToast = document.getElementById('setupToast');
+
+    // Pre-fill card code if URL has ?code=21
     const urlParams = new URLSearchParams(window.location.search);
-    const initialCode = urlParams.get('code');
-    if (initialCode) {
-      document.getElementById('cardCode').value = initialCode;
+    const paramCode = urlParams.get('code');
+    if (paramCode && /^\d+$/.test(paramCode)) {
+      cardCodeInput.value = paramCode;
     }
 
-    function showToast(msg, isError = false) {
-      const toast = document.getElementById('portalMessage');
-      toast.textContent = msg;
-      toast.style.display = 'block';
-      toast.style.borderColor = isError ? '#dc2626' : 'var(--cyan)';
-      toast.style.background = isError ? 'rgba(220, 38, 38, 0.15)' : 'rgba(2, 132, 199, 0.12)';
+    // Auto-restore reseller PIN from session for quick on-site setups
+    const cachedPin = sessionStorage.getItem('ttr_reseller_pass');
+    if (cachedPin) {
+      resellerPinInput.value = cachedPin;
     }
 
-    // Helper: Client-side Instagram handle sanitization
-    function sanitizeInstagram(input) {
-      if (!input) return null;
-      let val = input.trim();
-      if (!val) return null;
-      if (val.startsWith('http://') || val.startsWith('https://')) return val;
-      val = val.replace(/^@/, '').replace(/^instagram\.com\//, '').replace(/\/$/, '').trim();
-      return val ? `https://instagram.com/${val}` : null;
+    function showToast(el, msg, isError = false) {
+      el.textContent = msg;
+      el.style.display = 'block';
+      el.style.border = isError ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(34, 197, 94, 0.4)';
+      el.style.background = isError ? 'rgba(239, 68, 68, 0.12)' : 'rgba(34, 197, 94, 0.12)';
+      el.style.color = isError ? '#fca5a5' : '#86efac';
     }
 
-    const tabRegisterBtn = document.getElementById('tabRegisterBtn');
-    const tabDeregisterBtn = document.getElementById('tabDeregisterBtn');
-    const registerForm = document.getElementById('registerForm');
-    const deregisterArea = document.getElementById('deregisterArea');
-
-    tabRegisterBtn.addEventListener('click', () => {
-      tabRegisterBtn.classList.add('active');
-      tabDeregisterBtn.classList.remove('active');
-      registerForm.style.display = 'grid';
-      deregisterArea.style.display = 'none';
-    });
-
-    tabDeregisterBtn.addEventListener('click', () => {
-      tabDeregisterBtn.classList.add('active');
-      tabRegisterBtn.classList.remove('active');
-      registerForm.style.display = 'none';
-      deregisterArea.style.display = 'block';
-    });
-
-    // Check Card Status
-    document.getElementById('checkCardBtn').addEventListener('click', async () => {
-      const code = parseInt(document.getElementById('cardCode').value, 10);
-      const pin = document.getElementById('batchPin').value.trim();
-
-      if (!code || !pin) {
-        showToast('Please enter both card number and batch password.', true);
-        return;
-      }
-
-      showToast('Fetching card state...');
-      const { data, error } = await supabaseClient.rpc('get_card_details', { p_code: code });
-
-      if (error) {
-        showToast('Error loading card: ' + error.message, true);
-        return;
-      }
-
-      document.getElementById('cardDetailsArea').style.display = 'block';
-      const statusBadge = document.getElementById('cardStatusBadge');
-      const currentBiz = document.getElementById('currentBusiness');
-      const currentBizName = document.getElementById('currentBizName');
-
-      const status = data.status || 'unregistered';
-      statusBadge.textContent = status.toUpperCase();
-      statusBadge.className = 'badge badge-' + status;
-
-      // Populate Business Name
-      if (data.business_name) {
-        currentBiz.style.display = 'block';
-        currentBizName.textContent = data.business_name;
-        document.getElementById('regBizName').value = data.business_name;
-      } else {
-        currentBiz.style.display = 'none';
-        document.getElementById('regBizName').value = '';
-      }
-
-      // Populate City
-      document.getElementById('regCity').value = data.city_location || '';
-
-      // Populate Source URL
-      loadedSourceUrl = data.source_url || '';
-      loadedDestinationUrl = data.destination_url || '';
-      if (loadedSourceUrl) {
-        document.getElementById('regMapsUrl').value = loadedSourceUrl;
-      } else if (loadedDestinationUrl && !loadedDestinationUrl.includes('search.google.com/local/writereview')) {
-        document.getElementById('regMapsUrl').value = loadedDestinationUrl;
-      } else {
-        document.getElementById('regMapsUrl').value = '';
-      }
-
-      // Populate Category
-      if (data.category) {
-        document.getElementById('regCategory').value = data.category;
-      }
-
-      // Populate Mode
-      if (data.status === 'active' || data.status === 'demo') {
-        document.getElementById('regMode').value = data.status;
-      }
-
-      // Populate WhatsApp & Instagram (with null safety checks)
-      const regWhatsappInput = document.getElementById('regWhatsapp');
-      const regInstagramInput = document.getElementById('regInstagram');
-      if (regWhatsappInput) regWhatsappInput.value = data.whatsapp_url || '';
-      if (regInstagramInput) regInstagramInput.value = data.instagram_url || '';
-
-      showToast('Card loaded.');
-    });
-
-    // Save & Activate
-    registerForm.addEventListener('submit', async (e) => {
+    // 1. Authenticate & Unlock Card
+    gateForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const code = parseInt(cardCodeInput.value, 10);
+      const pin = resellerPinInput.value.trim();
 
-      const code = parseInt(document.getElementById('cardCode').value, 10);
-      const pin = document.getElementById('batchPin').value.trim();
-      const mode = document.getElementById('regMode').value;
-      const bizName = document.getElementById('regBizName').value.trim();
-      const city = document.getElementById('regCity').value.trim();
-      const category = document.getElementById('regCategory').value;
-      const inputUrl = document.getElementById('regMapsUrl').value.trim();
-      
-      const regWhatsappInput = document.getElementById('regWhatsapp');
-      const regInstagramInput = document.getElementById('regInstagram');
-      const rawWhatsapp = regWhatsappInput ? regWhatsappInput.value.trim() : '';
-      const rawInstagram = regInstagramInput ? regInstagramInput.value.trim() : '';
+      if (!code || !pin) return;
 
-      // 1. Resolve direct Google review link
-      let finalReviewUrl = inputUrl;
-      if (
-        (inputUrl === loadedSourceUrl && loadedDestinationUrl) ||
-        inputUrl.includes('search.google.com/local/writereview')
-      ) {
-        finalReviewUrl = loadedDestinationUrl || inputUrl;
+      btnUnlock.disabled = true;
+      btnUnlock.textContent = 'Verifying PIN...';
+      gateToast.style.display = 'none';
+
+      // Secure password-gated check
+      const { data, error } = await supabaseClient.rpc('verify_and_get_card', {
+        p_code: code,
+        p_password: pin
+      });
+
+      btnUnlock.disabled = false;
+      btnUnlock.textContent = 'Verify PIN & Unlock Card';
+
+      // Wrong PIN or invalid batch: Keep setup locked, reveal zero details
+      if (error || !data?.success) {
+        setupCard.style.display = 'none';
+        showToast(gateToast, data?.message || 'Invalid reseller PIN or unauthorized card.', true);
+        return;
+      }
+
+      // Valid PIN: Remember PIN for subsequent cards
+      sessionStorage.setItem('ttr_reseller_pass', pin);
+      localStorage.setItem('ttr_reseller_mode', 'true');
+
+      // Populate & reveal setup form
+      cardHeadingText.textContent = `Card #${code} Configuration`;
+      setupCard.style.display = 'block';
+      gateToast.style.display = 'none';
+
+      const regWhatsappInput = document.getElementById('whatsappInput');
+      const regInstagramInput = document.getElementById('instagramInput');
+
+      if (data.status === 'unregistered') {
+        statusBadge.textContent = '● Available';
+        statusBadge.className = 'badge badge-unregistered';
+        bizNameInput.value = '';
+        cityLocationInput.value = '';
+        categoryInput.value = 'Other';
+        destUrlInput.value = '';
+        if (regWhatsappInput) regWhatsappInput.value = '';
+        if (regInstagramInput) regInstagramInput.value = '';
+        btnSaveCard.textContent = 'Register Card';
+        btnResetCard.style.display = 'none';
+        showToast(setupToast, 'PIN verified. Card is unregistered and ready for initial setup.');
       } else {
-        showToast('Resolving direct review link...');
-        try {
-          const { data: edgeData, error: edgeErr } = await supabaseClient.functions.invoke('generate-review-link', {
-            body: { url: inputUrl, domain: window.location.hostname, platform: 'google' }
-          });
-          if (!edgeErr && edgeData?.success && edgeData?.destination_url) {
-            finalReviewUrl = edgeData.destination_url;
-          }
-        } catch (err) {
-          console.warn('Edge function invoke exception, fallback to raw url:', err);
-        }
+        statusBadge.textContent = '● Active / Registered';
+        statusBadge.className = 'badge badge-active';
+        bizNameInput.value = data.business_name || '';
+        cityLocationInput.value = data.city_location || '';
+        categoryInput.value = data.category || 'Other';
+        destUrlInput.value = data.destination_url || '';
+        if (regWhatsappInput) regWhatsappInput.value = data.whatsapp_url || '';
+        if (regInstagramInput) regInstagramInput.value = data.instagram_url || '';
+        btnSaveCard.textContent = 'Update Card Details';
+        btnResetCard.style.display = 'inline-flex';
+        showToast(setupToast, 'Card unlocked. You can now edit its destination or reset it.');
       }
 
-      // 2. Resolve WhatsApp link via Edge Function (if provided)
-      let finalWhatsappUrl = null;
-      if (rawWhatsapp) {
-        showToast('Formatting WhatsApp link...');
-        try {
-          const { data: waData, error: waErr } = await supabaseClient.functions.invoke('generate-whatsapp-link', {
-            body: { input: rawWhatsapp }
-          });
-          if (!waErr && waData?.success && waData?.destination_url) {
-            finalWhatsappUrl = waData.destination_url;
-          } else {
-            const digits = rawWhatsapp.replace(/\D/g, '');
-            if (digits) {
-              const formatted = digits.length === 10 ? `91${digits}` : digits;
-              finalWhatsappUrl = `https://wa.me/${formatted}?text=hii`;
-            }
-          }
-        } catch (err) {
-          console.warn('WhatsApp Edge Function fallback:', err);
-        }
-      }
+      // Smooth scroll to form on mobile
+      setupCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
 
-      // 3. Resolve Instagram link (client-side sanitization)
-      const finalInstagramUrl = sanitizeInstagram(rawInstagram);
+    // 2. Save / Register Card
+    cardSetupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = parseInt(cardCodeInput.value, 10);
+      const pin = resellerPinInput.value.trim();
+      const biz = bizNameInput.value.trim();
+      const city = cityLocationInput.value.trim();
+      const cat = categoryInput.value;
+      const dest = destUrlInput.value.trim();
 
-      // 4. Save to Database
-      showToast('Saving to card...');
+      const regWhatsappInput = document.getElementById('whatsappInput');
+      const regInstagramInput = document.getElementById('instagramInput');
+      const waVal = regWhatsappInput ? (regWhatsappInput.value.trim() || null) : null;
+      const igVal = regInstagramInput ? (regInstagramInput.value.trim() || null) : null;
+
+      btnSaveCard.disabled = true;
+      btnSaveCard.textContent = 'Saving details...';
+      showToast(setupToast, 'Registering card in database...');
+
       const { data, error } = await supabaseClient.rpc('register_card', {
         p_code: code,
         p_password: pin,
-        p_business_name: bizName,
-        p_destination_url: finalReviewUrl,
-        p_category: category,
-        p_mode: mode,
-        p_source_url: inputUrl,
+        p_business_name: biz,
+        p_destination_url: dest,
+        p_category: cat,
+        p_mode: 'active',
+        p_source_url: `${window.location.origin}/r/${code}`,
         p_city_location: city,
-        p_whatsapp_url: finalWhatsappUrl,
-        p_instagram_url: finalInstagramUrl
+        p_whatsapp_url: waVal,
+        p_instagram_url: igVal
       });
 
+      btnSaveCard.disabled = false;
+      btnSaveCard.textContent = 'Update Card Details';
+
       if (error || !data?.success) {
-        showToast(data?.message || error?.message || 'Failed to register card.', true);
+        showToast(setupToast, data?.message || 'Failed to save card.', true);
         return;
       }
 
-      showToast(`Success! Card ${code} registered as ${mode}.`);
-      document.getElementById('checkCardBtn').click();
+      statusBadge.textContent = '● Active / Registered';
+      statusBadge.className = 'badge badge-active';
+      btnResetCard.style.display = 'inline-flex';
+      showToast(setupToast, `Success! Card #${code} is now live.`);
     });
 
-    // Deregister & Clear
-    document.getElementById('confirmDeregisterBtn').addEventListener('click', async () => {
-      const code = parseInt(document.getElementById('cardCode').value, 10);
-      const pin = document.getElementById('batchPin').value.trim();
+    // 3. Reset / Wipe Card
+    btnResetCard.addEventListener('click', async () => {
+      const code = parseInt(cardCodeInput.value, 10);
+      const pin = resellerPinInput.value.trim();
 
-      showToast('Deregistering card...');
+      if (!confirm(`Are you sure you want to reset Card #${code}? It will become available for another client.`)) {
+        return;
+      }
+
+      btnResetCard.disabled = true;
+      btnResetCard.textContent = 'Resetting card...';
+
       const { data, error } = await supabaseClient.rpc('deregister_card', {
         p_code: code,
         p_password: pin
       });
 
+      btnResetCard.disabled = false;
+      btnResetCard.textContent = 'Wipe / Reset Card to Available';
+
       if (error || !data?.success) {
-        showToast(data?.message || error?.message || 'Failed to deregister.', true);
+        showToast(setupToast, data?.message || 'Failed to reset card.', true);
         return;
       }
 
-      showToast(`Card ${code} successfully cleared and reset to unregistered!`);
-      document.getElementById('checkCardBtn').click();
+      // Reset form view back to unregistered state
+      statusBadge.textContent = '● Available';
+      statusBadge.className = 'badge badge-unregistered';
+      bizNameInput.value = '';
+      cityLocationInput.value = '';
+      destUrlInput.value = '';
+      categoryInput.value = 'Other';
+      btnSaveCard.textContent = 'Register Card';
+      btnResetCard.style.display = 'none';
+      showToast(setupToast, `Card #${code} has been wiped and is now available.`);
     });
+
+    // Auto-unlock if both card code and session PIN are present
+    if (paramCode && cachedPin) {
+      gateForm.dispatchEvent(new Event('submit'));
+    }
   </script>
 </body>
 </html>
