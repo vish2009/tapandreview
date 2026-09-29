@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — TapToReview</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="/assets/taptoreview-logo.svg" type="image/svg+xml">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      background: radial-gradient(circle at top, #141c2b 0%, #0a0e17 100%);
+      color: #fff;
+      min-height: 100vh;
+      padding: 40px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .admin-container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .admin-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      border-radius: var(--radius, 16px);
+      padding: 28px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(12px);
+    }
+    .tab-nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 12px;
+      overflow-x: auto;
+    }
+    .tab-nav button {
+      background: transparent;
+      border: 0;
+      color: var(--muted, #94a3b8);
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 0.92rem;
+    }
+    .tab-nav button.active {
+      background: rgba(212, 175, 55, 0.15);
+      color: #d4af37;
+    }
+    .overview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 12px;
+    }
+    .overview-table th, .overview-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .overview-table th {
+      color: #d4af37;
+      font-weight: 700;
+    }
+    .range-tag {
+      display: inline-block;
+      background: rgba(2, 132, 199, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(2, 132, 199, 0.3);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      margin: 2px;
+    }
+    .toast-box {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-container">
+    <div style="text-align: center; margin-bottom: 28px;">
+      <a href="/" class="logo">
+        <img src="/assets/taptoreview-logo.svg" alt="TapToReview.in" style="height: 40px; margin: 0 auto 10px; display: block;">
+      </a>
+      <h1 style="font-size: 1.6rem; margin: 0;">Master Admin Control</h1>
+      <p class="micro" style="color: var(--muted, #94a3b8); margin-top: 4px;">Manage resellers, passwords, and card batches</p>
+    </div>
+
+    <!-- Login Area -->
+    <div id="loginSection" class="admin-card" style="max-width: 420px; margin: 0 auto;">
+      <form id="adminLoginForm" class="form-grid">
+        <label>
+          <span>Master Admin Password</span>
+          <input type="password" id="adminPasswordInput" placeholder="Enter admin password" required>
+        </label>
+        <button type="submit" class="btn btn-primary" style="justify-content: center;">Unlock Dashboard</button>
+      </form>
+    </div>
+
+    <!-- Dashboard (Appears on authentication) -->
+    <div id="dashboardSection" style="display: none;">
+      
+      <!-- Resellers & Batches Summary -->
+      <div class="admin-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="margin: 0; font-size: 1.15rem;">Reseller Overview</h3>
+          <button id="refreshBtn" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem;">Refresh</button>
+        </div>
+        <table class="overview-table">
+          <thead>
+            <tr>
+              <th>Reseller</th>
+              <th>Status</th>
+              <th>Assigned Card Ranges</th>
+            </tr>
+          </thead>
+          <tbody id="overviewBody">
+            <tr><td colspan="3" style="text-align: center; color: var(--muted);">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Action Panel -->
+      <div class="admin-card">
+        <div class="tab-nav">
+          <button type="button" class="active" id="tabAssignBtn">Assign Card Range</button>
+          <button type="button" id="tabNewResellerBtn">Add Reseller</button>
+          <button type="button" id="tabUpdatePassBtn">Change Reseller Password</button>
+        </div>
+
+        <!-- 1. Assign Cards Form -->
+        <form id="assignCardsForm" class="form-grid">
+          <label>
+            <span>Select Reseller</span>
+            <select id="assignResellerSelect" required></select>
+          </label>
+          <label>
+            <span>Start Card #</span>
+            <input type="number" id="rangeStart" placeholder="e.g. 51" required>
+          </label>
+          <label>
+            <span>End Card #</span>
+            <input type="number" id="rangeEnd" placeholder="e.g. 100" required>
+          </label>
+          <button type="submit" class="btn btn-primary" style="justify-content: center; margin-top: 10px;">Assign Range</button>
+        </form>
+
+        <!-- 2. Add Reseller Form -->
+        <form id="addResellerForm" class="form-grid" style="display: none;">
+          <label>
+            <span>Reseller Name</span>
+            <input type="text" id="newResellerName" placeholder="e.g. Rajesh Patil" required>
+          </label>
+          <label>
+            <span>Reseller PIN / Password</span>
+            <input type="password" id="newResellerPass" placeholder="e.g. rajesh@2026" required>
+          </label>
+          <button type="submit" class="btn btn-primary" style="justify-content: center; margin-top: 10px;">Create Reseller</button>
+        </form>
+
+        <!-- 3. Update Password Form -->
+        <form id="updatePassForm" class="form-grid" style="display: none;">
+          <label>
+            <span>Select Reseller</span>
+            <select id="updatePassResellerSelect" required></select>
+          </label>
+          <label>
+            <span>New Password</span>
+            <input type="password" id="updateNewPass" placeholder="Enter new secret PIN" required>
+          </label>
+          <button type="submit" class="btn btn-primary" style="justify-content: center; margin-top: 10px;">Update Password</button>
+        </form>
+
+        <div id="actionToast" class="toast-box"></div>
+      </div>
+
+      <div style="text-align: center;">
+        <button id="logoutBtn" style="background: none; border: 0; color: #ef4444; font-size: 0.85rem; cursor: pointer; text-decoration: underline;">
+          Lock Dashboard
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const supabaseUrl = 'https://zavspmqjmrinfxenbosz.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphdnNwbXFqbXJpbmZ4ZW5ib3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTkzOTksImV4cCI6MjEwNDAzNTM5OX0.7K-EFRRgLmLOh8BltHDH0qh61TDLbLlzCjJ5jBMXCc8';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+    let cachedAdminPass = sessionStorage.getItem('ttr_admin_pass') || '';
+
+    function showToast(msg, isError = false) {
+      const toast = document.getElementById('actionToast');
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      toast.style.border = isError ? '1px solid #ef4444' : '1px solid #22c55e';
+      toast.style.background = isError ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 197, 94, 0.15)';
+      toast.style.color = isError ? '#fca5a5' : '#86efac';
+    }
+
+    async function loadOverview() {
+      const { data, error } = await supabaseClient.rpc('admin_get_overview', {
+        p_admin_password: cachedAdminPass
+      });
+
+      if (error || !data?.success) {
+        sessionStorage.removeItem('ttr_admin_pass');
+        cachedAdminPass = '';
+        document.getElementById('dashboardSection').style.display = 'none';
+        document.getElementById('loginSection').style.display = 'block';
+        alert(data?.message || 'Session expired or incorrect password.');
+        return;
+      }
+
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('dashboardSection').style.display = 'block';
+
+      const tbody = document.getElementById('overviewBody');
+      const assignSelect = document.getElementById('assignResellerSelect');
+      const updateSelect = document.getElementById('updatePassResellerSelect');
+      tbody.innerHTML = '';
+      assignSelect.innerHTML = '';
+      updateSelect.innerHTML = '';
+
+      const resellers = data.resellers || [];
+      const batches = data.batches || [];
+
+      resellers.forEach(r => {
+        const opt1 = new Option(r.name, r.name);
+        const opt2 = new Option(r.name, r.name);
+        assignSelect.add(opt1);
+        updateSelect.add(opt2);
+
+        const rBatches = batches.filter(b => b.reseller_name === r.name && b.is_active);
+        const rangesHtml = rBatches.length > 0
+          ? rBatches.map(b => `<span class="range-tag">${b.range_start}–${b.range_end}</span>`).join(' ')
+          : '<span style="color: var(--muted);">No cards assigned</span>';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${r.name}</strong></td>
+          <td><span style="color: ${r.is_active ? '#4ade80' : '#f87171'};">${r.is_active ? 'Active' : 'Disabled'}</span></td>
+          <td>${rangesHtml}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Login Form
+    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      cachedAdminPass = document.getElementById('adminPasswordInput').value.trim();
+      sessionStorage.setItem('ttr_admin_pass', cachedAdminPass);
+      await loadOverview();
+    });
+
+    // Refresh Button
+    document.getElementById('refreshBtn').addEventListener('click', loadOverview);
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      sessionStorage.removeItem('ttr_admin_pass');
+      location.reload();
+    });
+
+    // Tabs
+    const tabAssignBtn = document.getElementById('tabAssignBtn');
+    const tabNewResellerBtn = document.getElementById('tabNewResellerBtn');
+    const tabUpdatePassBtn = document.getElementById('tabUpdatePassBtn');
+    const assignCardsForm = document.getElementById('assignCardsForm');
+    const addResellerForm = document.getElementById('addResellerForm');
+    const updatePassForm = document.getElementById('updatePassForm');
+
+    function setActiveTab(btn, form) {
+      [tabAssignBtn, tabNewResellerBtn, tabUpdatePassBtn].forEach(b => b.classList.remove('active'));
+      [assignCardsForm, addResellerForm, updatePassForm].forEach(f => f.style.display = 'none');
+      btn.classList.add('active');
+      form.style.display = 'grid';
+      document.getElementById('actionToast').style.display = 'none';
+    }
+
+    tabAssignBtn.addEventListener('click', () => setActiveTab(tabAssignBtn, assignCardsForm));
+    tabNewResellerBtn.addEventListener('click', () => setActiveTab(tabNewResellerBtn, addResellerForm));
+    tabUpdatePassBtn.addEventListener('click', () => setActiveTab(tabUpdatePassBtn, updatePassForm));
+
+    // Action 1: Assign Range
+    assignCardsForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('assignResellerSelect').value;
+      const start = parseInt(document.getElementById('rangeStart').value, 10);
+      const end = parseInt(document.getElementById('rangeEnd').value, 10);
+
+      showToast('Assigning cards...');
+      const { data, error } = await supabaseClient.rpc('admin_assign_batch', {
+        p_admin_password: cachedAdminPass,
+        p_reseller_name: name,
+        p_range_start: start,
+        p_range_end: end
+      });
+
+      if (error || !data?.success) {
+        showToast(data?.message || error?.message || 'Failed to assign.', true);
+        return;
+      }
+
+      showToast(`Success! Assigned cards ${start} to ${end} to ${name}.`);
+      document.getElementById('rangeStart').value = '';
+      document.getElementById('rangeEnd').value = '';
+      loadOverview();
+    });
+
+    // Action 2: Add Reseller
+    addResellerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('newResellerName').value.trim();
+      const pass = document.getElementById('newResellerPass').value.trim();
+
+      showToast('Creating reseller...');
+      const { data, error } = await supabaseClient.rpc('admin_create_reseller', {
+        p_admin_password: cachedAdminPass,
+        p_reseller_name: name,
+        p_reseller_password: pass
+      });
+
+      if (error || !data?.success) {
+        showToast(data?.message || error?.message || 'Failed to create.', true);
+        return;
+      }
+
+      showToast(`Success! Reseller ${name} created.`);
+      document.getElementById('newResellerName').value = '';
+      document.getElementById('newResellerPass').value = '';
+      loadOverview();
+    });
+
+    // Action 3: Update Password
+    updatePassForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('updatePassResellerSelect').value;
+      const pass = document.getElementById('updateNewPass').value.trim();
+
+      showToast('Updating password...');
+      const { data, error } = await supabaseClient.rpc('admin_update_reseller_password', {
+        p_admin_password: cachedAdminPass,
+        p_reseller_name: name,
+        p_new_password: pass
+      });
+
+      if (error || !data?.success) {
+        showToast(data?.message || error?.message || 'Failed to update.', true);
+        return;
+      }
+
+      showToast(`Success! Password for ${name} updated.`);
+      document.getElementById('updateNewPass').value = '';
+    });
+
+    // Session restore
+    if (cachedAdminPass) {
+      loadOverview();
+    }
+  </script>
+</body>
+</html>
