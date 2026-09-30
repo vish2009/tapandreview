@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Partner Portal — TapToReview</title>
+  <title>Customer & Partner Portal — TapToReview</title>
   <link rel="icon" href="/assets/taptoreview-logo.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -122,10 +122,7 @@
       gap: 6px;
     }
 
-    .quick-row {
-      display: flex;
-      gap: 10px;
-    }
+    .quick-row { display: flex; gap: 10px; }
 
     .segmented-tabs {
       display: flex;
@@ -334,27 +331,62 @@
       <a href="/">
         <img src="/assets/taptoreview-logo.svg" alt="TapToReview.in" class="logo-img">
       </a>
-      <h1 class="title">Reseller Partner Portal</h1>
-      <p class="subtitle">Card inventory, setup shortcuts & bulk re-orders</p>
+      <h1 class="title">Customer & Partner Portal</h1>
+      <p class="subtitle">Direct smart card orders, inventory & activation</p>
     </header>
 
-    <!-- 1. Login View -->
-    <div id="loginCard" class="card" style="max-width: 420px; margin: 0 auto;">
-      <h2 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 14px; text-align: center;">Partner Login</h2>
+    <!-- 1. Authentication Card: Sign In OR Register -->
+    <div id="loginCard" class="card" style="max-width: 440px; margin: 0 auto;">
+      
+      <!-- Auth Switcher -->
+      <div class="segmented-tabs" style="margin-bottom: 16px;">
+        <button type="button" class="tab-btn active" id="authTabSignIn">Sign In</button>
+        <button type="button" class="tab-btn" id="authTabSignUp">Register New Account</button>
+      </div>
+
+      <!-- Sign In Form -->
       <form id="resellerLoginForm" class="form-grid" autocomplete="off">
         <div class="form-group">
-          <label>Mobile Number or Reseller Name</label>
-          <input type="text" id="loginIdentifier" placeholder="e.g. 9876543210 or vishal" required autofocus>
+          <label>10-Digit Mobile Number or Name</label>
+          <input type="text" id="loginIdentifier" placeholder="e.g. 9876543210" required autofocus>
         </div>
         <div class="form-group">
-          <label>Secret PIN / Password</label>
-          <input type="password" id="loginPass" placeholder="Enter your partner PIN" required autocomplete="current-password">
+          <label>4-Digit Security PIN</label>
+          <input type="password" id="loginPass" placeholder="Enter 4-digit PIN" maxlength="4" inputmode="numeric" required autocomplete="current-password">
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 6px;">Sign In</button>
       </form>
+
+      <!-- Self-Registration Form -->
+      <form id="resellerRegisterForm" class="form-grid" style="display: none;" autocomplete="off">
+        <div class="form-group">
+          <label>Business / Partner Name</label>
+          <input type="text" id="regName" placeholder="e.g. Cafe Bloom" required>
+        </div>
+        <div class="form-group">
+          <label>10-Digit WhatsApp Mobile Number</label>
+          <input type="tel" id="regPhone" placeholder="e.g. 9876543210" maxlength="10" required>
+        </div>
+        <div class="form-group">
+          <label>Create 4-Digit Security PIN</label>
+          <input type="password" id="regPin" placeholder="e.g. 1234" maxlength="4" inputmode="numeric" required autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label>Confirm 4-Digit Security PIN</label>
+          <input type="password" id="regPinConfirm" placeholder="Re-enter 4-digit PIN" maxlength="4" inputmode="numeric" required autocomplete="new-password">
+        </div>
+        <button type="submit" id="btnRegisterSubmit" class="btn btn-primary" style="width: 100%; margin-top: 6px;">
+          Submit & Verify on WhatsApp
+        </button>
+        <p style="font-size: 0.78rem; color: var(--text-muted); text-align: center; margin-top: 4px;">
+          * Generates a secret verification handshake code to verify your phone.
+        </p>
+      </form>
+
+      <div id="authToast" class="toast-box"></div>
     </div>
 
-    <!-- 2. Dashboard View -->
+    <!-- 2. Dashboard View (Shown once logged in) -->
     <main id="portalDashboard" style="display: none;">
 
       <!-- Partner Identity Header -->
@@ -402,7 +434,7 @@
             <span style="color: var(--text-muted); font-size: 0.9rem;">Loading batches...</span>
           </div>
           <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">
-            * You can register and reset any card within these numbers using your partner PIN.
+            * You can register and reset any card within these numbers using your 4-digit PIN.
           </p>
         </div>
 
@@ -496,6 +528,94 @@
       toast.style.color = isError ? '#fca5a5' : '#86efac';
     }
 
+    function showAuthToast(msg, isError = false) {
+      const toast = document.getElementById('authToast');
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      toast.style.border = isError ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(34, 197, 94, 0.4)';
+      toast.style.background = isError ? 'rgba(239, 68, 68, 0.12)' : 'rgba(34, 197, 94, 0.12)';
+      toast.style.color = isError ? '#fca5a5' : '#86efac';
+    }
+
+    // Toggle Sign In vs Sign Up
+    const authTabSignIn = document.getElementById('authTabSignIn');
+    const authTabSignUp = document.getElementById('authTabSignUp');
+    const loginForm = document.getElementById('resellerLoginForm');
+    const registerForm = document.getElementById('resellerRegisterForm');
+
+    authTabSignIn.addEventListener('click', () => {
+      authTabSignIn.classList.add('active');
+      authTabSignUp.classList.remove('active');
+      loginForm.style.display = 'grid';
+      registerForm.style.display = 'none';
+      document.getElementById('authToast').style.display = 'none';
+    });
+
+    authTabSignUp.addEventListener('click', () => {
+      authTabSignUp.classList.add('active');
+      authTabSignIn.classList.remove('active');
+      loginForm.style.display = 'none';
+      registerForm.style.display = 'grid';
+      document.getElementById('authToast').style.display = 'none';
+    });
+
+    // Handle Self-Registration with Secret Code Handshake
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const phone = document.getElementById('regPhone').value.trim().replace(/\D/g, '');
+      const pin = document.getElementById('regPin').value.trim();
+      const pinConfirm = document.getElementById('regPinConfirm').value.trim();
+      const btn = document.getElementById('btnRegisterSubmit');
+
+      if (phone.length < 10) {
+        showAuthToast('Please enter a valid 10-digit mobile number.', true);
+        return;
+      }
+      if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+        showAuthToast('PIN must be exactly 4 digits.', true);
+        return;
+      }
+      if (pin !== pinConfirm) {
+        showAuthToast('PINs do not match. Please re-enter.', true);
+        return;
+      }
+
+      // Generate random 4-digit handshake token
+      const verificationCode = 'TR-' + Math.floor(1000 + Math.random() * 9000);
+
+      btn.disabled = true;
+      btn.textContent = 'Submitting registration...';
+      showAuthToast('Submitting registration...');
+
+      const { data, error } = await supabaseClient.rpc('self_register_reseller', {
+        p_name: name,
+        p_phone: phone,
+        p_pin: pin,
+        p_code: verificationCode
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Submit & Verify on WhatsApp';
+
+      if (error || !data?.success) {
+        showAuthToast(data?.message || error?.message || 'Registration failed.', true);
+        return;
+      }
+
+      showAuthToast('Registration received! Opening WhatsApp to send verification code...');
+
+      // Open WhatsApp with secret code verification
+      const waMsg = `Hi TapToReview,\nI just registered for an account.\n\nBusiness/Name: ${name}\nPhone: ${phone}\nVerification Code: ${verificationCode}\n\nPlease verify and approve my account.`;
+      window.open(`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(waMsg)}`, '_blank', 'noopener');
+
+      // Pre-fill Sign-In tab
+      document.getElementById('loginIdentifier').value = phone;
+      document.getElementById('loginPass').value = '';
+      authTabSignIn.click();
+      showAuthToast('Verification message generated! Once approved by admin, you can log in with your PIN.');
+    });
+
     // Populate Quantity Dropdown Strictly to 1, 5, 10, 20, 50
     const qtySelect = document.getElementById('orderQty');
     qtySelect.innerHTML = '';
@@ -503,11 +623,10 @@
       const opt = document.createElement('option');
       opt.value = qty;
       opt.textContent = PRICING_TIERS[qty].label;
-      if (qty === 10) opt.selected = true; // default 10 cards
+      if (qty === 10) opt.selected = true;
       qtySelect.appendChild(opt);
     });
 
-    // Auto-Populate Total Amount & UPI Link when Quantity Changes
     function updateOrderPricing() {
       const selectedQty = parseInt(qtySelect.value, 10);
       const tier = PRICING_TIERS[selectedQty] || { total: selectedQty * 240, rate: 240 };
@@ -539,6 +658,9 @@
         activeResellerPass = '';
         document.getElementById('portalDashboard').style.display = 'none';
         document.getElementById('loginCard').style.display = 'block';
+        if (data?.message) {
+          showAuthToast(data.message, true);
+        }
         if (activeIdentifier) {
           document.getElementById('loginIdentifier').value = activeIdentifier;
         }
@@ -564,7 +686,7 @@
         ).join('');
       }
 
-      // Render Past Orders showing both Quantity AND Total Amount
+      // Render Past Orders
       const ordersContainer = document.getElementById('ordersContainer');
       const orders = data.orders || [];
       if (orders.length === 0) {
@@ -595,7 +717,7 @@
     }
 
     // Login Form Submit
-    document.getElementById('resellerLoginForm').addEventListener('submit', async (e) => {
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       activeIdentifier = document.getElementById('loginIdentifier').value.trim();
       activeResellerPass = document.getElementById('loginPass').value.trim();
@@ -651,7 +773,6 @@
       btn.textContent = 'Submitting order...';
       showToast('Processing order...');
 
-      // Pass both quantity AND auto-populated total_amount to the database
       const { data, error } = await supabaseClient.rpc('reseller_create_order', {
         p_reseller_name: activeIdentifier,
         p_password: activeResellerPass,
@@ -670,7 +791,7 @@
       showToast('Order saved! Opening WhatsApp to notify admin...');
 
       const partnerDisplayName = data.reseller_name || verifiedResellerName || activeIdentifier;
-      const msg = `Hi Vishal,\nI just placed a card restock order on TapToReview.\n\nPartner: ${partnerDisplayName}\nQuantity: ${qty} Cards\nTotal Amount: ₹${tier.total}\nNotes: ${userNotes || 'None'}`;
+      const msg = `Hi TapToReview,\nI just placed a card order.\n\nPartner: ${partnerDisplayName}\nQuantity: ${qty} Cards\nTotal Amount: ₹${tier.total}\nNotes: ${userNotes || 'None'}`;
       window.open(`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
 
       document.getElementById('orderNotes').value = '';
