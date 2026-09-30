@@ -42,7 +42,7 @@
     }
 
     .admin-wrap {
-      max-width: 860px;
+      max-width: 900px;
       margin: 0 auto;
     }
 
@@ -359,6 +359,7 @@
                   <th>Reseller</th>
                   <th>Phone / WhatsApp</th>
                   <th>Quantity</th>
+                  <th>Total Amount</th>
                   <th>Date</th>
                   <th>Notes</th>
                   <th>Status</th>
@@ -366,7 +367,7 @@
                 </tr>
               </thead>
               <tbody id="ordersTableBody">
-                <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Loading orders...</td></tr>
+                <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Loading orders...</td></tr>
               </tbody>
             </table>
           </div>
@@ -558,7 +559,7 @@
       }
 
       if (orders.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No reseller orders placed yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No reseller orders placed yet.</td></tr>';
         return;
       }
 
@@ -577,11 +578,16 @@
              </button>`
           : `<span style="color: var(--text-muted); font-size: 0.8rem;">Completed</span>`;
 
+        const amountHtml = o.total_amount 
+          ? `<strong style="color: var(--gold);">₹${o.total_amount.toLocaleString('en-IN')}</strong>` 
+          : '—';
+
         const row = document.createElement('tr');
         row.innerHTML = `
           <td><strong>${o.reseller_name}</strong></td>
           <td>${phoneHtml}</td>
           <td><strong>${o.card_quantity}</strong> Cards</td>
+          <td>${amountHtml}</td>
           <td style="font-size: 0.82rem; color: var(--text-muted);">${dateStr}</td>
           <td style="font-size: 0.82rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${o.notes || ''}">
             ${o.notes || '—'}
@@ -593,6 +599,7 @@
       });
     }
 
+    // Fulfill action
     window.fulfillOrder = async function(orderId, resellerName) {
       if (!confirm(`Mark order for ${resellerName} as fulfilled and open card allocation?`)) return;
 
@@ -611,6 +618,7 @@
       showToast(`Order marked fulfilled! Select card numbers to assign to ${resellerName}.`);
       await loadData();
 
+      // Automatically switch to Assign Cards tab with reseller pre-selected
       setTab(tabAssign, assignForm);
       const sel = document.getElementById('assignResellerSelect');
       if (sel) sel.value = resellerName;
@@ -641,6 +649,7 @@
     tabCreate.addEventListener('click', () => setTab(tabCreate, createForm));
     tabPassword.addEventListener('click', () => setTab(tabPassword, passwordForm));
 
+    // Login Form Submit
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       activeAdminPass = document.getElementById('adminPass').value.trim();
@@ -648,6 +657,7 @@
       await loadData();
     });
 
+    // Refresh & Logout
     document.getElementById('refreshBtn').addEventListener('click', loadData);
     document.getElementById('lockSessionBtn').addEventListener('click', () => {
       sessionStorage.removeItem('ttr_admin_pass');
@@ -729,6 +739,7 @@
       document.getElementById('newResellerNewPass').value = '';
     });
 
+    // Restore active session
     if (activeAdminPass) {
       loadData();
     }
