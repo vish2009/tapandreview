@@ -70,7 +70,6 @@
       font-size: 0.9rem;
     }
 
-    /* Cards */
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -82,24 +81,6 @@
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
     }
 
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 18px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* Partner Identity Bar */
     .partner-bar {
       display: flex;
       justify-content: space-between;
@@ -120,9 +101,9 @@
     .partner-phone {
       font-size: 0.85rem;
       color: var(--text-muted);
+      margin-top: 2px;
     }
 
-    /* Quick Action Box */
     .quick-activate-box {
       background: rgba(2, 132, 199, 0.1);
       border: 1px solid rgba(2, 132, 199, 0.28);
@@ -135,7 +116,7 @@
       font-size: 0.95rem;
       font-weight: 700;
       color: #38bdf8;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -146,7 +127,6 @@
       gap: 10px;
     }
 
-    /* Segmented Navigation */
     .segmented-tabs {
       display: flex;
       background: rgba(0, 0, 0, 0.45);
@@ -176,17 +156,8 @@
       color: var(--gold);
     }
 
-    /* Inputs & Forms */
-    .form-grid {
-      display: grid;
-      gap: 14px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+    .form-grid { display: grid; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
 
     label {
       font-size: 0.84rem;
@@ -222,12 +193,8 @@
       padding-right: 40px;
     }
 
-    select option {
-      background: #0f172a;
-      color: #fff;
-    }
+    select option { background: #0f172a; color: #fff; }
 
-    /* Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -260,7 +227,6 @@
       color: #cbd5e1;
     }
 
-    /* Chips & Badges */
     .range-chip {
       display: inline-flex;
       align-items: center;
@@ -326,14 +292,14 @@
     <!-- 1. Login View -->
     <div id="loginCard" class="card" style="max-width: 420px; margin: 0 auto;">
       <h2 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 14px; text-align: center;">Partner Login</h2>
-      <form id="resellerLoginForm" class="form-grid">
+      <form id="resellerLoginForm" class="form-grid" autocomplete="off">
         <div class="form-group">
-          <label>Reseller / Agency Name</label>
-          <input type="text" id="loginName" placeholder="e.g. vishal" required autofocus>
+          <label>Mobile Number or Reseller Name</label>
+          <input type="text" id="loginIdentifier" placeholder="e.g. 9876543210 or vishal" required autofocus>
         </div>
         <div class="form-group">
           <label>Secret PIN / Password</label>
-          <input type="password" id="loginPass" placeholder="Enter your partner PIN" required>
+          <input type="password" id="loginPass" placeholder="Enter your partner PIN" required autocomplete="current-password">
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 6px;">Sign In</button>
       </form>
@@ -370,7 +336,7 @@
         </form>
       </div>
 
-      <!-- Main Portal Actions (Tabs) -->
+      <!-- Main Portal Tabs -->
       <div class="card">
         <div class="segmented-tabs">
           <button type="button" class="tab-btn active" id="tabInventoryBtn">My Inventory</button>
@@ -432,8 +398,9 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphdnNwbXFqbXJpbmZ4ZW5ib3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTkzOTksImV4cCI6MjEwNDAzNTM5OX0.7K-EFRRgLmLOh8BltHDH0qh61TDLbLlzCjJ5jBMXCc8';
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    let activeResellerName = localStorage.getItem('ttr_reseller_name') || '';
+    let activeIdentifier = localStorage.getItem('ttr_reseller_identifier') || '';
     let activeResellerPass = sessionStorage.getItem('ttr_reseller_pass') || '';
+    let verifiedResellerName = '';
 
     function showToast(msg, isError = false) {
       const toast = document.getElementById('toastBox');
@@ -445,8 +412,9 @@
     }
 
     async function loadPortal() {
+      // Passes p_identifier to match the updated SQL function
       const { data, error } = await supabaseClient.rpc('reseller_get_portal', {
-        p_reseller_name: activeResellerName,
+        p_identifier: activeIdentifier,
         p_password: activeResellerPass
       });
 
@@ -455,16 +423,18 @@
         activeResellerPass = '';
         document.getElementById('portalDashboard').style.display = 'none';
         document.getElementById('loginCard').style.display = 'block';
-        if (activeResellerName) {
-          document.getElementById('loginName').value = activeResellerName;
+        if (activeIdentifier) {
+          document.getElementById('loginIdentifier').value = activeIdentifier;
         }
         return;
       }
 
+      verifiedResellerName = data.reseller.name;
+
       document.getElementById('loginCard').style.display = 'none';
       document.getElementById('portalDashboard').style.display = 'block';
 
-      // Header Details
+      // Header info
       document.getElementById('displayResellerName').textContent = data.reseller.name;
       document.getElementById('displayResellerPhone').textContent = data.reseller.phone ? `Phone: ${data.reseller.phone}` : 'Registered Partner';
 
@@ -479,7 +449,7 @@
         ).join('');
       }
 
-      // Render Order History
+      // Render Past Orders
       const ordersContainer = document.getElementById('ordersContainer');
       const orders = data.orders || [];
       if (orders.length === 0) {
@@ -503,15 +473,14 @@
       }
     }
 
-    // Login Submission
+    // Login Form Submit
     document.getElementById('resellerLoginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      activeResellerName = document.getElementById('loginName').value.trim();
+      activeIdentifier = document.getElementById('loginIdentifier').value.trim();
       activeResellerPass = document.getElementById('loginPass').value.trim();
 
-      localStorage.setItem('ttr_reseller_name', activeResellerName);
+      localStorage.setItem('ttr_reseller_identifier', activeIdentifier);
       sessionStorage.setItem('ttr_reseller_pass', activeResellerPass);
-      // Set reseller gesture recognition flag
       localStorage.setItem('ttr_reseller_mode', 'true');
 
       await loadPortal();
@@ -546,7 +515,7 @@
     tabOrderBtn.addEventListener('click', () => switchTab(tabOrderBtn, tabOrderView));
     tabHistoryBtn.addEventListener('click', () => switchTab(tabHistoryBtn, tabHistoryView));
 
-    // Submit Order
+    // Submit Restock Order
     document.getElementById('orderCardsForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const qty = parseInt(document.getElementById('orderQty').value, 10);
@@ -558,7 +527,7 @@
       showToast('Processing order...');
 
       const { data, error } = await supabaseClient.rpc('reseller_create_order', {
-        p_reseller_name: activeResellerName,
+        p_reseller_name: activeIdentifier,
         p_password: activeResellerPass,
         p_card_quantity: qty,
         p_notes: notes
@@ -573,9 +542,9 @@
 
       showToast('Order saved! Opening WhatsApp to notify admin...');
 
-      // Notify owner directly on WhatsApp
+      const partnerDisplayName = data.reseller_name || verifiedResellerName || activeIdentifier;
       const ownerPhone = '917620952720';
-      const msg = `Hi Vishal,\nI just placed a card restock order on TapToReview.\n\nPartner: ${activeResellerName}\nQuantity: ${qty} Cards\nNotes: ${notes || 'None'}`;
+      const msg = `Hi Vishal,\nI just placed a card restock order on TapToReview.\n\nPartner: ${partnerDisplayName}\nQuantity: ${qty} Cards\nNotes: ${notes || 'None'}`;
       window.open(`https://wa.me/${ownerPhone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
 
       document.getElementById('orderNotes').value = '';
@@ -592,8 +561,7 @@
       location.reload();
     });
 
-    // Auto-login check
-    if (activeResellerName && activeResellerPass) {
+    if (activeIdentifier && activeResellerPass) {
       loadPortal();
     }
   </script>
