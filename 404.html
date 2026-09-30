@@ -117,15 +117,15 @@
       <p class="biz-location" id="bizLocation"></p>
 
       <div class="actions-stack">
-        <!-- Google Review CTA (Official Google 'G' Icon) -->
-        <a id="btnGoogle" class="action-btn btn-google" href="#" target="_blank" rel="noopener">
+        <!-- Google Review CTA (Hidden by default, shown if destination_url exists) -->
+        <a id="btnGoogle" class="action-btn btn-google" href="#" target="_blank" rel="noopener" style="display: none;">
           <svg class="btn-icon" viewBox="0 0 24 24">
             <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/>
           </svg>
           Leave a Google Review
         </a>
 
-        <!-- WhatsApp CTA (Official WhatsApp Icon with Handset) -->
+        <!-- WhatsApp CTA -->
         <a id="btnWhatsapp" class="action-btn btn-whatsapp" href="#" target="_blank" rel="noopener" style="display: none;">
           <svg class="btn-icon" viewBox="0 0 24 24">
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
@@ -139,12 +139,6 @@
           Follow on Instagram
         </a>
       </div>
-
-      <!-- Reseller white-label: powered-by link disabled
-      <div class="footer-note">
-        Powered by <a href="/">TapToReview.in</a>
-      </div>
-      -->
     </div>
   </div>
 
@@ -163,7 +157,6 @@
       const segments = rawPath.split('/');
       let cardCode = null;
 
-      // Extract card code from /r/19 or /19
       if (segments[0] === 'r' && segments[1] && /^\d+$/.test(segments[1])) {         cardCode = parseInt(segments[1], 10);       } else if (/^\d+$/.test(segments[0])) {
         cardCode = parseInt(segments[0], 10);
       }
@@ -171,18 +164,18 @@
       let bizData = null;
 
       if (cardCode !== null) {
-        // Query card details via get_card_details RPC
         const { data, error } = await supabaseClient.rpc('get_card_details', { p_code: cardCode });
 
-        // Unassigned or invalid card -> Route straight to activate
-        if (error || !data || data.status === 'unregistered' || !data.destination_url) {
+        // Check if card has AT LEAST one destination
+        const hasAnyLink = data?.destination_url || data?.whatsapp_url || data?.instagram_url;
+
+        if (error || !data || data.status === 'unregistered' || !hasAnyLink) {
           window.location.replace(`/activate?code=${cardCode}`);
           return;
         }
 
         bizData = data;
 
-        // Log tap for monthly leaderboard
         try {
           await supabaseClient.rpc('increment_tap', {
             client_slug: 'card-' + cardCode,
@@ -192,7 +185,6 @@
           console.error('Tap count error:', err);
         }
       } else {
-        // Older name-based slug (e.g., /hotel-shreedatta-pune)
         const { data, error } = await supabaseClient
           .from('clients')
           .select('business_name, city_location, category, destination_url, whatsapp_url, instagram_url')
@@ -200,14 +192,15 @@
           .eq('platform', 'google')
           .single();
 
-        if (error || !data?.destination_url) {
+        const hasAnyLink = data?.destination_url || data?.whatsapp_url || data?.instagram_url;
+
+        if (error || !hasAnyLink) {
           document.getElementById('cardContainer').innerHTML = '<h2>Business link not found.</h2>';
           return;
         }
 
         bizData = data;
 
-        // Log tap for legacy slug
         try {
           await supabaseClient.rpc('increment_tap', {
             client_slug: rawPath,
@@ -218,11 +211,17 @@
         }
       }
 
-      // Render business micro-landing page
+      // Render business info
       const bizTitleEl = document.getElementById('bizName');
       bizTitleEl.textContent = bizData.business_name || 'Our Channels';
       document.getElementById('bizLocation').textContent = bizData.city_location || '';
-      document.getElementById('btnGoogle').href = bizData.destination_url;
+
+      // Conditional Google Review Button
+      if (bizData.destination_url) {
+        const googleBtn = document.getElementById('btnGoogle');
+        googleBtn.href = bizData.destination_url;
+        googleBtn.style.display = 'flex';
+      }
 
       // Conditional WhatsApp Button
       if (bizData.whatsapp_url) {
@@ -238,7 +237,7 @@
         igBtn.style.display = 'flex';
       }
 
-      // Invisible triple-tap on business name to open reseller portal
+      // Invisible triple-tap on business name
       let tapCount = 0;
       let tapTimer = null;
       bizTitleEl.addEventListener('click', () => {
