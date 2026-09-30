@@ -227,6 +227,14 @@
       color: #cbd5e1;
     }
 
+    .btn-upi {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-upi:hover { filter: brightness(1.1); }
+
     .range-chip {
       display: inline-flex;
       align-items: center;
@@ -244,12 +252,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 14px;
+      padding: 14px 16px;
       background: rgba(255, 255, 255, 0.02);
-      border-radius: 8px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      margin-bottom: 8px;
-      font-size: 0.9rem;
+      border-radius: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      margin-bottom: 10px;
     }
 
     .badge-status {
@@ -262,6 +269,48 @@
 
     .status-pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
     .status-fulfilled { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+
+    .pricing-summary-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      margin-top: 10px;
+    }
+
+    .pricing-val-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .order-amount-display {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--gold);
+    }
+
+    .qr-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      padding: 14px;
+      border-radius: 12px;
+      width: 200px;
+      margin: 0 auto 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .qr-img {
+      width: 172px;
+      height: 172px;
+      display: block;
+    }
 
     .toast-box {
       margin-top: 14px;
@@ -357,22 +406,44 @@
           </p>
         </div>
 
-        <!-- Tab 2: Re-order Cards -->
+        <!-- Tab 2: Re-order Cards with Pricing & UPI -->
         <div id="tabOrderView" style="display: none;">
           <form id="orderCardsForm" class="form-grid">
             <div class="form-group">
-              <label>Inventory Quantity</label>
-              <select id="orderQty" required>
-                <option value="25">Starter Pack (25 Cards)</option>
-                <option value="50" selected>Agency Pack (50 Cards)</option>
-                <option value="100">Growth Pack (100 Cards)</option>
-                <option value="250">Wholesale (250 Cards)</option>
-              </select>
+              <label>Select Inventory Pack</label>
+              <select id="orderQty" required></select>
             </div>
+
             <div class="form-group">
               <label>Delivery Address / Notes (Optional)</label>
-              <textarea id="orderNotes" rows="2" placeholder="Dispatch instructions or custom notes"></textarea>
+              <textarea id="orderNotes" rows="2" placeholder="Delivery address or dispatch instructions"></textarea>
             </div>
+
+            <!-- Auto-Populated Payment Breakdown -->
+            <div class="pricing-summary-box">
+              <div class="pricing-val-row">
+                <div>
+                  <div style="font-size: 0.82rem; color: var(--text-muted);">Total Order Value:</div>
+                  <div id="orderRateNote" style="font-size: 0.8rem; color: #38bdf8;">Rate: ₹240/card</div>
+                </div>
+                <div class="order-amount-display" id="displayOrderAmount">₹2,400</div>
+              </div>
+
+              <!-- Dynamic UPI QR Code -->
+              <div style="text-align: center; margin-bottom: 12px;">
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">Scan with GPay / PhonePe / Paytm:</p>
+                <div class="qr-container">
+                  <img id="upiQrImg" class="qr-img" alt="UPI Payment QR Code" src="">
+                </div>
+                <span style="font-size: 0.76rem; color: #94a3b8;">UPI ID: <strong id="displayUpiId" style="color: #cbd5e1;"></strong></span>
+              </div>
+
+              <!-- Direct UPI Intent Link -->
+              <a id="btnPayUpiIntent" class="btn btn-upi" href="#" style="width: 100%; margin-bottom: 10px;">
+                ⚡ Pay via UPI App (GPay / PhonePe / Paytm)
+              </a>
+            </div>
+
             <button type="submit" id="orderSubmitBtn" class="btn btn-primary" style="margin-top: 6px;">
               Submit Order & Ping on WhatsApp
             </button>
@@ -394,6 +465,20 @@
   </div>
 
   <script>
+    // ==========================================
+    // EXACT PRICING TIERS & UPI CONFIGURATION
+    // ==========================================
+    const ADMIN_UPI_ID = '7620952720@ybl';
+    const ADMIN_PHONE = '917620952720';
+
+    const PRICING_TIERS = {
+      1:  { total: 350,  rate: 350, label: '1 Card — Single (₹350/card = ₹350)' },
+      5:  { total: 1350, rate: 270, label: '5 Cards — Starter (₹270/card = ₹1,350)' },
+      10: { total: 2400, rate: 240, label: '10 Cards — Pro Pack (₹240/card = ₹2,400)' },
+      20: { total: 4400, rate: 220, label: '20 Cards — Growth Pack (₹220/card = ₹4,400)' },
+      50: { total: 9500, rate: 190, label: '50 Cards — Agency Pack (₹190/card = ₹9,500)' }
+    };
+
     const supabaseUrl = 'https://zavspmqjmrinfxenbosz.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphdnNwbXFqbXJpbmZ4ZW5ib3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTkzOTksImV4cCI6MjEwNDAzNTM5OX0.7K-EFRRgLmLOh8BltHDH0qh61TDLbLlzCjJ5jBMXCc8';
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
@@ -411,8 +496,39 @@
       toast.style.color = isError ? '#fca5a5' : '#86efac';
     }
 
+    // Populate Quantity Dropdown Strictly to 1, 5, 10, 20, 50
+    const qtySelect = document.getElementById('orderQty');
+    qtySelect.innerHTML = '';
+    [1, 5, 10, 20, 50].forEach((qty) => {
+      const opt = document.createElement('option');
+      opt.value = qty;
+      opt.textContent = PRICING_TIERS[qty].label;
+      if (qty === 10) opt.selected = true; // default 10 cards
+      qtySelect.appendChild(opt);
+    });
+
+    // Auto-Populate Total Amount & UPI Link when Quantity Changes
+    function updateOrderPricing() {
+      const selectedQty = parseInt(qtySelect.value, 10);
+      const tier = PRICING_TIERS[selectedQty] || { total: selectedQty * 240, rate: 240 };
+
+      document.getElementById('displayOrderAmount').textContent = `₹${tier.total.toLocaleString('en-IN')}`;
+      document.getElementById('orderRateNote').textContent = `Rate: ₹${tier.rate}/card`;
+      document.getElementById('displayUpiId').textContent = ADMIN_UPI_ID;
+
+      const partnerName = verifiedResellerName || activeIdentifier || 'Partner';
+      const note = encodeURIComponent(`TapToReview ${selectedQty} Cards Order - ${partnerName}`);
+      const upiUri = `upi://pay?pa=${ADMIN_UPI_ID}&pn=TapToReview&am=${tier.total}&cu=INR&tn=${note}`;
+
+      document.getElementById('btnPayUpiIntent').href = upiUri;
+
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=2&data=${encodeURIComponent(upiUri)}`;
+      document.getElementById('upiQrImg').src = qrApiUrl;
+    }
+
+    qtySelect.addEventListener('change', updateOrderPricing);
+
     async function loadPortal() {
-      // Passes p_identifier to match the updated SQL function
       const { data, error } = await supabaseClient.rpc('reseller_get_portal', {
         p_identifier: activeIdentifier,
         p_password: activeResellerPass
@@ -434,7 +550,6 @@
       document.getElementById('loginCard').style.display = 'none';
       document.getElementById('portalDashboard').style.display = 'block';
 
-      // Header info
       document.getElementById('displayResellerName').textContent = data.reseller.name;
       document.getElementById('displayResellerPhone').textContent = data.reseller.phone ? `Phone: ${data.reseller.phone}` : 'Registered Partner';
 
@@ -449,7 +564,7 @@
         ).join('');
       }
 
-      // Render Past Orders
+      // Render Past Orders showing both Quantity AND Total Amount
       const ordersContainer = document.getElementById('ordersContainer');
       const orders = data.orders || [];
       if (orders.length === 0) {
@@ -458,11 +573,15 @@
         ordersContainer.innerHTML = orders.map(o => {
           const dateStr = new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
           const statusClass = o.status === 'fulfilled' ? 'status-fulfilled' : 'status-pending';
+          const amountStr = o.total_amount ? `₹${o.total_amount.toLocaleString('en-IN')}` : '—';
           return `
             <div class="order-item">
               <div>
-                <strong>${o.card_quantity} Cards</strong>
-                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+                <div style="font-weight: 700; font-size: 0.95rem;">
+                  <span>${o.card_quantity} Cards</span>
+                  <span style="color: var(--gold); margin-left: 8px;">(${amountStr})</span>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 3px;">
                   Placed on ${dateStr} ${o.notes ? `• ${o.notes}` : ''}
                 </div>
               </div>
@@ -471,6 +590,8 @@
           `;
         }).join('');
       }
+
+      updateOrderPricing();
     }
 
     // Login Form Submit
@@ -509,6 +630,9 @@
       btn.classList.add('active');
       view.style.display = 'block';
       document.getElementById('toastBox').style.display = 'none';
+      if (view === tabOrderView) {
+        updateOrderPricing();
+      }
     }
 
     tabInventoryBtn.addEventListener('click', () => switchTab(tabInventoryBtn, tabInventoryView));
@@ -518,19 +642,22 @@
     // Submit Restock Order
     document.getElementById('orderCardsForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const qty = parseInt(document.getElementById('orderQty').value, 10);
-      const notes = document.getElementById('orderNotes').value.trim();
+      const qty = parseInt(qtySelect.value, 10);
+      const userNotes = document.getElementById('orderNotes').value.trim();
+      const tier = PRICING_TIERS[qty] || { total: qty * 240 };
       const btn = document.getElementById('orderSubmitBtn');
 
       btn.disabled = true;
       btn.textContent = 'Submitting order...';
       showToast('Processing order...');
 
+      // Pass both quantity AND auto-populated total_amount to the database
       const { data, error } = await supabaseClient.rpc('reseller_create_order', {
         p_reseller_name: activeIdentifier,
         p_password: activeResellerPass,
         p_card_quantity: qty,
-        p_notes: notes
+        p_notes: userNotes,
+        p_total_amount: tier.total
       });
 
       if (error || !data?.success) {
@@ -543,9 +670,8 @@
       showToast('Order saved! Opening WhatsApp to notify admin...');
 
       const partnerDisplayName = data.reseller_name || verifiedResellerName || activeIdentifier;
-      const ownerPhone = '917620952720';
-      const msg = `Hi Vishal,\nI just placed a card restock order on TapToReview.\n\nPartner: ${partnerDisplayName}\nQuantity: ${qty} Cards\nNotes: ${notes || 'None'}`;
-      window.open(`https://wa.me/${ownerPhone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+      const msg = `Hi Vishal,\nI just placed a card restock order on TapToReview.\n\nPartner: ${partnerDisplayName}\nQuantity: ${qty} Cards\nTotal Amount: ₹${tier.total}\nNotes: ${userNotes || 'None'}`;
+      window.open(`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
 
       document.getElementById('orderNotes').value = '';
       btn.disabled = false;
