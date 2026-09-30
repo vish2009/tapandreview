@@ -41,15 +41,8 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    .admin-wrap {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .admin-header {
-      text-align: center;
-      margin-bottom: 28px;
-    }
+    .admin-wrap { max-width: 920px; margin: 0 auto; }
+    .admin-header { text-align: center; margin-bottom: 28px; }
 
     .logo-img {
       height: 42px;
@@ -65,10 +58,7 @@
       margin-bottom: 4px;
     }
 
-    .admin-subtitle {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
+    .admin-subtitle { color: var(--text-muted); font-size: 0.9rem; }
 
     .card {
       background: var(--card-bg);
@@ -139,11 +129,7 @@
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-    label {
-      font-size: 0.84rem;
-      font-weight: 600;
-      color: #cbd5e1;
-    }
+    label { font-size: 0.84rem; font-weight: 600; color: #cbd5e1; }
 
     input, select, textarea {
       width: 100%;
@@ -196,10 +182,7 @@
       box-shadow: 0 4px 16px var(--gold-glow);
     }
 
-    .btn-primary:hover {
-      filter: brightness(1.1);
-      transform: translateY(-1px);
-    }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
     .btn-outline {
       background: rgba(255, 255, 255, 0.04);
@@ -209,11 +192,7 @@
 
     .btn-outline:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
 
-    .btn-xs {
-      padding: 5px 10px;
-      font-size: 0.78rem;
-      border-radius: 6px;
-    }
+    .btn-xs { padding: 5px 10px; font-size: 0.78rem; border-radius: 6px; }
 
     .table-wrap {
       overflow-x: auto;
@@ -273,6 +252,17 @@
       font-weight: 800;
     }
 
+    .secret-code-pill {
+      background: rgba(212, 175, 55, 0.15);
+      color: var(--gold);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
     .range-pill {
       display: inline-block;
       background: rgba(2, 132, 199, 0.15);
@@ -308,7 +298,7 @@
         <img src="/assets/taptoreview-logo.svg" alt="TapToReview.in" class="logo-img">
       </a>
       <h1 class="admin-title">Master Admin Portal</h1>
-      <p class="admin-subtitle">Order fulfillment, batch allocation & partner management</p>
+      <p class="admin-subtitle">Order fulfillment, user approvals & card allocations</p>
     </header>
 
     <!-- Password Login -->
@@ -326,7 +316,7 @@
     <!-- Main Dashboard -->
     <main id="mainDashboard" style="display: none;">
 
-      <!-- 1st COMPONENT: Actions & Orders Panel (AT TOP) -->
+      <!-- 1st COMPONENT: Actions & Operations Panel -->
       <section class="card">
         <div class="card-header">
           <div class="card-title">
@@ -341,7 +331,11 @@
 
         <!-- Navigation Tabs -->
         <div class="segmented-tabs">
-          <button type="button" class="tab-btn active" id="tabOrders">
+          <button type="button" class="tab-btn active" id="tabApprovals">
+            👤 Pending Approvals
+            <span id="pendingApprovalsCount" class="tab-count" style="display: none;">0</span>
+          </button>
+          <button type="button" class="tab-btn" id="tabOrders">
             📦 Open Orders
             <span id="openOrdersCount" class="tab-count" style="display: none;">0</span>
           </button>
@@ -350,13 +344,33 @@
           <button type="button" class="tab-btn" id="tabPassword">Change Password</button>
         </div>
 
-        <!-- Tab 1: Open / Unfulfilled Reseller Orders -->
-        <div id="ordersView">
+        <!-- Tab 0: Pending Sign-up Approvals with Secret Code Handshake -->
+        <div id="approvalsView">
           <div class="table-wrap">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Reseller</th>
+                  <th>Customer / Partner</th>
+                  <th>Mobile Phone</th>
+                  <th>Secret Handshake Code</th>
+                  <th>Registered Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="approvalsTableBody">
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading pending sign-ups...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 1: Open Orders -->
+        <div id="ordersView" style="display: none;">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Reseller / Customer</th>
                   <th>Phone / WhatsApp</th>
                   <th>Quantity</th>
                   <th>Total Amount</th>
@@ -376,7 +390,7 @@
         <!-- Tab 2: Assign Card Range -->
         <form id="assignForm" class="form-grid" style="display: none;">
           <div class="form-group">
-            <label>Select Reseller</label>
+            <label>Select Approved Partner</label>
             <select id="assignResellerSelect" required></select>
           </div>
           <div class="form-row">
@@ -392,7 +406,7 @@
           <button type="submit" class="btn btn-primary" style="margin-top: 6px;">Assign Card Range</button>
         </form>
 
-        <!-- Tab 3: Add Partner -->
+        <!-- Tab 3: Manual Add Partner -->
         <form id="createForm" class="form-grid" style="display: none;">
           <div class="form-group">
             <label>Reseller / Partner Name</label>
@@ -404,8 +418,8 @@
               <input type="tel" id="newResellerPhone" placeholder="e.g. 9876543210" required>
             </div>
             <div class="form-group">
-              <label>Initial Secret PIN / Password</label>
-              <input type="password" id="newResellerPass" placeholder="e.g. rahul@2026" required>
+              <label>4-Digit Security PIN</label>
+              <input type="password" id="newResellerPass" placeholder="e.g. 1234" maxlength="4" required>
             </div>
           </div>
           <button type="submit" class="btn btn-primary" style="margin-top: 6px;">Create Reseller Record</button>
@@ -414,27 +428,27 @@
         <!-- Tab 4: Change Password -->
         <form id="passwordForm" class="form-grid" style="display: none;">
           <div class="form-group">
-            <label>Select Reseller</label>
+            <label>Select Partner</label>
             <select id="passwordResellerSelect" required></select>
           </div>
           <div class="form-group">
-            <label>New Secret PIN</label>
-            <input type="password" id="newResellerNewPass" placeholder="Enter replacement password" required>
+            <label>New 4-Digit Security PIN</label>
+            <input type="password" id="newResellerNewPass" placeholder="Enter replacement PIN" maxlength="4" required>
           </div>
-          <button type="submit" class="btn btn-primary" style="margin-top: 6px;">Update Reseller Password</button>
+          <button type="submit" class="btn btn-primary" style="margin-top: 6px;">Update PIN</button>
         </form>
 
         <div id="toastBox" class="toast-msg"></div>
       </section>
 
-      <!-- 2nd COMPONENT: Reseller Overview (BELOW ACTIONS) -->
+      <!-- 2nd COMPONENT: Active Partners Overview -->
       <section class="card">
         <div class="card-header">
           <div class="card-title">
             <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            Reseller Overview & Inventory
+            Active Partners & Inventory
           </div>
         </div>
 
@@ -442,7 +456,7 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>Reseller Name</th>
+                <th>Partner Name</th>
                 <th>Phone</th>
                 <th>Status</th>
                 <th>Assigned Card Ranges</th>
@@ -473,6 +487,7 @@
 
     let activeAdminPass = sessionStorage.getItem('ttr_admin_pass') || '';
     let globalOrders = [];
+    let globalPending = [];
 
     function showToast(msg, isError = false) {
       const toast = document.getElementById('toastBox');
@@ -500,7 +515,7 @@
       document.getElementById('loginCard').style.display = 'none';
       document.getElementById('mainDashboard').style.display = 'block';
 
-      // 1. Render Resellers Table & Dropdowns
+      // 1. Render Active Partners Table & Dropdowns
       const tbody = document.getElementById('resellerTableBody');
       const assignSelect = document.getElementById('assignResellerSelect');
       const passwordSelect = document.getElementById('passwordResellerSelect');
@@ -512,9 +527,10 @@
       const resellers = data.resellers || [];
       const batches = data.batches || [];
       globalOrders = data.orders || [];
+      globalPending = data.pending_resellers || [];
 
       if (resellers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No resellers onboarded yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No active partners onboarded yet.</td></tr>';
       } else {
         resellers.forEach(r => {
           assignSelect.add(new Option(r.name, r.name));
@@ -540,9 +556,77 @@
         });
       }
 
-      // 2. Render Orders Table & Unfulfilled Badge
+      // 2. Render Pending Approvals with Verification Handshake Code
+      renderApprovalsTable(globalPending);
+
+      // 3. Render Orders Table
       renderOrdersTable(globalOrders);
     }
+
+    function renderApprovalsTable(pendingList) {
+      const tbody = document.getElementById('approvalsTableBody');
+      tbody.innerHTML = '';
+
+      const badgeCountEl = document.getElementById('pendingApprovalsCount');
+      if (pendingList.length > 0) {
+        badgeCountEl.textContent = pendingList.length;
+        badgeCountEl.style.display = 'inline-block';
+      } else {
+        badgeCountEl.style.display = 'none';
+      }
+
+      if (pendingList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No pending sign-ups right now.</td></tr>';
+        return;
+      }
+
+      pendingList.forEach(p => {
+        const dateStr = new Date(p.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        const cleanPhone = p.phone ? p.phone.replace(/\D/g, '').slice(-10) : '';
+        const phoneHtml = cleanPhone
+          ? `<a href="https://wa.me/91${cleanPhone}" target="_blank" rel="noopener" style="color: #22c55e; text-decoration: none;">💬 ${cleanPhone}</a>`
+          : '<span style="color: var(--text-muted);">—</span>';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${p.name}</strong></td>
+          <td>${phoneHtml}</td>
+          <td><span class="secret-code-pill">${p.verification_code || 'N/A'}</span></td>
+          <td style="font-size: 0.82rem; color: var(--text-muted);">${dateStr}</td>
+          <td>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-outline btn-xs" onclick="handleApproval('${p.id}', '${p.name}', 'approve')" style="color: #4ade80; border-color: rgba(34, 197, 94, 0.4);">
+                ✓ Approve
+              </button>
+              <button class="btn btn-outline btn-xs" onclick="handleApproval('${p.id}', '${p.name}', 'reject')" style="color: #f87171; border-color: rgba(239, 68, 68, 0.4);">
+                ✕ Reject
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    window.handleApproval = async function(resellerId, name, action) {
+      const verb = action === 'approve' ? 'Approve' : 'Reject & Delete';
+      if (!confirm(`${verb} registration for "${name}"?`)) return;
+
+      showToast(`${action === 'approve' ? 'Approving' : 'Rejecting'} account...`);
+      const { data, error } = await supabaseClient.rpc('admin_approve_reseller', {
+        p_admin_password: activeAdminPass,
+        p_reseller_id: resellerId,
+        p_action: action
+      });
+
+      if (error || !data?.success) {
+        showToast(data?.message || 'Failed to update approval.', true);
+        return;
+      }
+
+      showToast(data.message);
+      await loadData();
+    };
 
     function renderOrdersTable(orders) {
       const tbody = document.getElementById('ordersTableBody');
@@ -559,7 +643,7 @@
       }
 
       if (orders.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No reseller orders placed yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No orders placed yet.</td></tr>';
         return;
       }
 
@@ -599,7 +683,6 @@
       });
     }
 
-    // Fulfill action
     window.fulfillOrder = async function(orderId, resellerName) {
       if (!confirm(`Mark order for ${resellerName} as fulfilled and open card allocation?`)) return;
 
@@ -618,7 +701,6 @@
       showToast(`Order marked fulfilled! Select card numbers to assign to ${resellerName}.`);
       await loadData();
 
-      // Automatically switch to Assign Cards tab with reseller pre-selected
       setTab(tabAssign, assignForm);
       const sel = document.getElementById('assignResellerSelect');
       if (sel) sel.value = resellerName;
@@ -626,24 +708,27 @@
     };
 
     // Tab Switching
+    const tabApprovals = document.getElementById('tabApprovals');
     const tabOrders = document.getElementById('tabOrders');
     const tabAssign = document.getElementById('tabAssign');
     const tabCreate = document.getElementById('tabCreate');
     const tabPassword = document.getElementById('tabPassword');
 
+    const approvalsView = document.getElementById('approvalsView');
     const ordersView = document.getElementById('ordersView');
     const assignForm = document.getElementById('assignForm');
     const createForm = document.getElementById('createForm');
     const passwordForm = document.getElementById('passwordForm');
 
     function setTab(btn, el) {
-      [tabOrders, tabAssign, tabCreate, tabPassword].forEach(b => b.classList.remove('active'));
-      [ordersView, assignForm, createForm, passwordForm].forEach(e => e.style.display = 'none');
+      [tabApprovals, tabOrders, tabAssign, tabCreate, tabPassword].forEach(b => b.classList.remove('active'));
+      [approvalsView, ordersView, assignForm, createForm, passwordForm].forEach(e => e.style.display = 'none');
       btn.classList.add('active');
-      el.style.display = el === ordersView ? 'block' : 'grid';
+      el.style.display = (el === approvalsView || el === ordersView) ? 'block' : 'grid';
       document.getElementById('toastBox').style.display = 'none';
     }
 
+    tabApprovals.addEventListener('click', () => setTab(tabApprovals, approvalsView));
     tabOrders.addEventListener('click', () => setTab(tabOrders, ordersView));
     tabAssign.addEventListener('click', () => setTab(tabAssign, assignForm));
     tabCreate.addEventListener('click', () => setTab(tabCreate, createForm));
@@ -664,7 +749,7 @@
       location.reload();
     });
 
-    // Form 1: Assign Range
+    // Form: Assign Range
     assignForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('assignResellerSelect').value;
@@ -680,7 +765,7 @@
       });
 
       if (error || !data?.success) {
-        showToast(data?.message || error?.message || 'Failed to assign.', true);
+        showToast(data?.message || 'Failed to assign.', true);
         return;
       }
 
@@ -690,7 +775,7 @@
       loadData();
     });
 
-    // Form 2: Create Reseller
+    // Form: Create Reseller manually
     createForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('newResellerName').value.trim();
@@ -717,7 +802,7 @@
       loadData();
     });
 
-    // Form 3: Change Password
+    // Form: Change Password
     passwordForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('passwordResellerSelect').value;
@@ -731,15 +816,14 @@
       });
 
       if (error || !data?.success) {
-        showToast(data?.message || 'Failed to update password.', true);
+        showToast(data?.message || 'Failed to update PIN.', true);
         return;
       }
 
-      showToast(`Password updated for ${name}.`);
+      showToast(`PIN updated for ${name}.`);
       document.getElementById('newResellerNewPass').value = '';
     });
 
-    // Restore active session
     if (activeAdminPass) {
       loadData();
     }
