@@ -306,9 +306,10 @@
           </div>
         </div>
 
+        <!-- Optional Google Review Destination -->
         <div class="form-group">
-          <label for="destUrlInput">Google Maps URL or Review Link</label>
-          <input type="url" id="destUrlInput" placeholder="Paste Google Maps URL or write-review link" required>
+          <label for="destUrlInput">Google Maps URL or Review Link (Optional)</label>
+          <input type="url" id="destUrlInput" placeholder="Paste Google Maps URL (leave blank if no Google page)">
         </div>
 
         <!-- Direct 10-Digit Mobile Number Input for WhatsApp -->
@@ -362,14 +363,12 @@
     const btnResetCard = document.getElementById('btnResetCard');
     const setupToast = document.getElementById('setupToast');
 
-    // Pre-fill card code if URL has ?code=X
     const urlParams = new URLSearchParams(window.location.search);
     const paramCode = urlParams.get('code');
     if (paramCode && /^\d+$/.test(paramCode)) {
       cardCodeInput.value = paramCode;
     }
 
-    // Explicitly clear password field on refresh to prevent autofill persistence
     resellerPinInput.value = '';
 
     function showToast(el, msg, isError = false) {
@@ -400,14 +399,12 @@
       btnUnlock.disabled = false;
       btnUnlock.textContent = 'Verify PIN & Unlock Card';
 
-      // Wrong PIN or invalid batch: Keep setup locked, reveal zero details
       if (error || !data?.success) {
         setupCard.style.display = 'none';
         showToast(gateToast, data?.message || error?.message || 'Invalid reseller PIN or unauthorized card.', true);
         return;
       }
 
-      // Populate & reveal setup form
       cardHeadingText.textContent = `Card #${code} Configuration`;
       setupCard.style.display = 'block';
       gateToast.style.display = 'none';
@@ -432,7 +429,6 @@
         categoryInput.value = data.category || 'Other';
         destUrlInput.value = data.destination_url || '';
         
-        // Extract 10 digits from stored wa.me link
         if (data.whatsapp_url) {
           const digits = data.whatsapp_url.replace(/\D/g, '');
           whatsappPhoneInput.value = digits.length >= 10 ? digits.slice(-10) : digits;
@@ -443,7 +439,7 @@
         instagramInput.value = data.instagram_url || '';
         btnSaveCard.textContent = 'Update Card Details';
         btnResetCard.style.display = 'inline-flex';
-        showToast(setupToast, 'Card unlocked. You can now edit its destination or reset it.');
+        showToast(setupToast, 'Card unlocked. You can now edit its details or reset it.');
       }
 
       setupCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -459,37 +455,43 @@
       const cat = categoryInput.value;
       const rawDest = destUrlInput.value.trim();
 
-      // Convert 10-digit phone to standard wa.me link
       const rawWaDigits = whatsappPhoneInput.value.trim().replace(/\D/g, '');
       const waVal = rawWaDigits.length >= 10 ? `https://wa.me/91${rawWaDigits.slice(-10)}` : null;
       const igVal = instagramInput.value.trim() || null;
 
-      btnSaveCard.disabled = true;
-      btnSaveCard.textContent = 'Generating direct review link...';
-      showToast(setupToast, 'Resolving direct 5-star Google review link...');
-
-      let finalGoogleUrl = rawDest;
-
-      // Invoke generate-review-link Edge Function to resolve Place ID
-      try {
-        const { data: linkData, error: linkErr } = await supabaseClient.functions.invoke('generate-review-link', {
-          body: {
-            url: rawDest,
-            domain: window.location.hostname,
-            platform: 'google'
-          }
-        });
-
-        if (!linkErr && linkData?.success && linkData?.destination_url) {
-          finalGoogleUrl = linkData.destination_url;
-        } else {
-          console.warn('Could not transform review link, using raw input:', linkErr || linkData);
-        }
-      } catch (err) {
-        console.warn('Edge function invoke error, falling back to raw input:', err);
+      // Validation: Card must have at least ONE destination
+      if (!rawDest && !waVal && !igVal) {
+        showToast(setupToast, 'Please provide at least one destination (Google link, WhatsApp number, or Instagram link).', true);
+        return;
       }
 
+      btnSaveCard.disabled = true;
       btnSaveCard.textContent = 'Saving details...';
+
+      let finalGoogleUrl = rawDest || null;
+
+      // Only invoke Edge Function if a Google URL was provided
+      if (rawDest) {
+        showToast(setupToast, 'Resolving direct 5-star Google review link...');
+        try {
+          const { data: linkData, error: linkErr } = await supabaseClient.functions.invoke('generate-review-link', {
+            body: {
+              url: rawDest,
+              domain: window.location.hostname,
+              platform: 'google'
+            }
+          });
+
+          if (!linkErr && linkData?.success && linkData?.destination_url) {
+            finalGoogleUrl = linkData.destination_url;
+          } else {
+            console.warn('Could not transform review link, using raw input:', linkErr || linkData);
+          }
+        } catch (err) {
+          console.warn('Edge function invoke error, falling back to raw input:', err);
+        }
+      }
+
       showToast(setupToast, 'Registering card in database...');
 
       const { data, error } = await supabaseClient.rpc('register_card', {
@@ -513,13 +515,14 @@
         return;
       }
 
-      // Update the input field with the resolved write-review URL
-      destUrlInput.value = finalGoogleUrl;
+      if (finalGoogleUrl) {
+        destUrlInput.value = finalGoogleUrl;
+      }
 
       statusBadge.textContent = '● Active / Registered';
       statusBadge.className = 'badge badge-active';
       btnResetCard.style.display = 'inline-flex';
-      showToast(setupToast, `Success! Card #${code} is live with direct review popup.`);
+      showToast(setupToast, `Success! Card #${code} is live.`);
     });
 
     // 3. Reset / Wipe Card
