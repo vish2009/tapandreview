@@ -3,193 +3,466 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard — TapToReview</title>
-  <link rel="stylesheet" href="/css/styles.css">
+  <title>Master Admin Control — TapToReview</title>
   <link rel="icon" href="/assets/taptoreview-logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <style>
-    body {
-      background: radial-gradient(circle at top, #141c2b 0%, #0a0e17 100%);
-      color: #fff;
-      min-height: 100vh;
-      padding: 40px 16px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(17, 24, 39, 0.78);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --gold: #d4af37;
+      --gold-hover: #f0c96b;
+      --gold-glow: rgba(212, 175, 55, 0.22);
+      --cyan: #0284c7;
+      --text: #ffffff;
+      --text-muted: #94a3b8;
+      --input-bg: #111827;
+      --input-border: rgba(255, 255, 255, 0.12);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .admin-container {
-      max-width: 720px;
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #172338 0%, var(--bg) 75%);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      padding: 40px 16px 80px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .admin-wrap {
+      max-width: 860px;
       margin: 0 auto;
     }
-    .admin-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(212, 175, 55, 0.25);
-      border-radius: var(--radius, 16px);
-      padding: 28px;
-      margin-bottom: 24px;
-      backdrop-filter: blur(12px);
+
+    .admin-header {
+      text-align: center;
+      margin-bottom: 28px;
     }
-    .tab-nav {
-      display: flex;
-      gap: 8px;
+
+    .logo-img {
+      height: 42px;
+      margin: 0 auto 10px;
+      display: block;
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+    }
+
+    .admin-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .admin-subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 26px;
       margin-bottom: 22px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
       padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .card-title {
+      font-size: 1.12rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .segmented-tabs {
+      display: flex;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 4px;
+      border-radius: 12px;
+      gap: 4px;
+      margin-bottom: 22px;
       overflow-x: auto;
     }
-    .tab-nav button {
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 14px;
       background: transparent;
       border: 0;
-      color: var(--muted, #94a3b8);
-      font-weight: 700;
-      padding: 8px 14px;
       border-radius: 8px;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.88rem;
       cursor: pointer;
+      transition: var(--transition);
       white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .tab-btn:hover { color: #fff; }
+
+    .tab-btn.active {
+      background: rgba(212, 175, 55, 0.16);
+      color: var(--gold);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .form-grid { display: grid; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    label {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.94rem;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-glow);
+    }
+
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      background-size: 16px;
+      padding-right: 40px;
+    }
+
+    select option { background: #0f172a; color: #fff; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
       font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      border: 0;
+      text-decoration: none;
     }
-    .tab-nav button.active {
-      background: rgba(212, 175, 55, 0.15);
-      color: #d4af37;
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold) 0%, #b89528 100%);
+      color: #0b0f19;
+      box-shadow: 0 4px 16px var(--gold-glow);
     }
-    .overview-table {
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #cbd5e1;
+    }
+
+    .btn-outline:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+
+    .btn-xs {
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .data-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.9rem;
-      margin-top: 12px;
-    }
-    .overview-table th, .overview-table td {
-      padding: 10px 12px;
       text-align: left;
+      font-size: 0.88rem;
+    }
+
+    .data-table th {
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.74rem;
+      letter-spacing: 0.06em;
+      padding: 12px 14px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      white-space: nowrap;
     }
-    .overview-table th {
-      color: #d4af37;
+
+    .data-table td {
+      padding: 13px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+      vertical-align: middle;
+    }
+
+    .data-table tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.76rem;
       font-weight: 700;
+      text-transform: capitalize;
     }
-    .range-tag {
+
+    .badge-active { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+    .badge-inactive { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-pending { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
+    .badge-fulfilled { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+
+    .tab-count {
+      background: #ef4444;
+      color: #fff;
+      font-size: 0.72rem;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-weight: 800;
+    }
+
+    .range-pill {
       display: inline-block;
       background: rgba(2, 132, 199, 0.15);
       color: #38bdf8;
       border: 1px solid rgba(2, 132, 199, 0.3);
-      padding: 2px 8px;
+      padding: 2px 7px;
       border-radius: 6px;
-      font-size: 0.8rem;
-      margin: 2px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin: 2px 3px 2px 0;
     }
-    .toast-box {
-      margin-top: 14px;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 0.9rem;
+
+    .toast-msg {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
       display: none;
+    }
+
+    @media (max-width: 600px) {
+      .card { padding: 18px; }
+      .form-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <div class="admin-container">
-    <div style="text-align: center; margin-bottom: 28px;">
-      <a href="/" class="logo">
-        <img src="/assets/taptoreview-logo.svg" alt="TapToReview.in" style="height: 40px; margin: 0 auto 10px; display: block;">
-      </a>
-      <h1 style="font-size: 1.6rem; margin: 0;">Master Admin Control</h1>
-      <p class="micro" style="color: var(--muted, #94a3b8); margin-top: 4px;">Manage resellers, passwords, and card batches</p>
-    </div>
+  <div class="admin-wrap">
 
-    <!-- Login Area -->
-    <div id="loginSection" class="admin-card" style="max-width: 420px; margin: 0 auto;">
-      <form id="adminLoginForm" class="form-grid">
-        <label>
-          <span>Master Admin Password</span>
-          <input type="password" id="adminPasswordInput" placeholder="Enter admin password" required>
-        </label>
-        <button type="submit" class="btn btn-primary" style="justify-content: center;">Unlock Dashboard</button>
+    <header class="admin-header">
+      <a href="/">
+        <img src="/assets/taptoreview-logo.svg" alt="TapToReview.in" class="logo-img">
+      </a>
+      <h1 class="admin-title">Master Admin Portal</h1>
+      <p class="admin-subtitle">Order fulfillment, batch allocation & partner management</p>
+    </header>
+
+    <!-- Password Login -->
+    <div id="loginCard" class="card" style="max-width: 440px; margin: 0 auto;">
+      <h2 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 14px; text-align: center;">Unlock Dashboard</h2>
+      <form id="loginForm" class="form-grid">
+        <div class="form-group">
+          <label for="adminPass">Master Password</label>
+          <input type="password" id="adminPass" placeholder="Enter master password" required autofocus>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Authenticate Session</button>
       </form>
     </div>
 
-    <!-- Dashboard (Appears on authentication) -->
-    <div id="dashboardSection" style="display: none;">
-      
-      <!-- Resellers & Batches Summary -->
-      <div class="admin-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h3 style="margin: 0; font-size: 1.15rem;">Reseller Overview</h3>
-          <button id="refreshBtn" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem;">Refresh</button>
-        </div>
-        <table class="overview-table">
-          <thead>
-            <tr>
-              <th>Reseller</th>
-              <th>Status</th>
-              <th>Assigned Card Ranges</th>
-            </tr>
-          </thead>
-          <tbody id="overviewBody">
-            <tr><td colspan="3" style="text-align: center; color: var(--muted);">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div>
+    <!-- Main Dashboard -->
+    <main id="mainDashboard" style="display: none;">
 
-      <!-- Action Panel -->
-      <div class="admin-card">
-        <div class="tab-nav">
-          <button type="button" class="active" id="tabAssignBtn">Assign Card Range</button>
-          <button type="button" id="tabNewResellerBtn">Add Reseller</button>
-          <button type="button" id="tabUpdatePassBtn">Change Reseller Password</button>
+      <!-- 1st COMPONENT: Actions & Orders Panel (AT TOP) -->
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            System Operations
+          </div>
+          <button id="refreshBtn" class="btn btn-outline btn-xs">Refresh Data</button>
         </div>
 
-        <!-- 1. Assign Cards Form -->
-        <form id="assignCardsForm" class="form-grid">
-          <label>
-            <span>Select Reseller</span>
+        <!-- Navigation Tabs -->
+        <div class="segmented-tabs">
+          <button type="button" class="tab-btn active" id="tabOrders">
+            📦 Open Orders
+            <span id="openOrdersCount" class="tab-count" style="display: none;">0</span>
+          </button>
+          <button type="button" class="tab-btn" id="tabAssign">Assign Cards</button>
+          <button type="button" class="tab-btn" id="tabCreate">Add Partner</button>
+          <button type="button" class="tab-btn" id="tabPassword">Change Password</button>
+        </div>
+
+        <!-- Tab 1: Open / Unfulfilled Reseller Orders -->
+        <div id="ordersView">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Reseller</th>
+                  <th>Phone / WhatsApp</th>
+                  <th>Quantity</th>
+                  <th>Date</th>
+                  <th>Notes</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody">
+                <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Loading orders...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 2: Assign Card Range -->
+        <form id="assignForm" class="form-grid" style="display: none;">
+          <div class="form-group">
+            <label>Select Reseller</label>
             <select id="assignResellerSelect" required></select>
-          </label>
-          <label>
-            <span>Start Card #</span>
-            <input type="number" id="rangeStart" placeholder="e.g. 51" required>
-          </label>
-          <label>
-            <span>End Card #</span>
-            <input type="number" id="rangeEnd" placeholder="e.g. 100" required>
-          </label>
-          <button type="submit" class="btn btn-primary" style="justify-content: center; margin-top: 10px;">Assign Range</button>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Starting Card #</label>
+              <input type="number" id="rangeStart" placeholder="e.g. 51" min="1" required>
+            </div>
+            <div class="form-group">
+              <label>Ending Card #</label>
+              <input type="number" id="rangeEnd" placeholder="e.g. 100" min="1" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top: 6px;">Assign Card Range</button>
         </form>
 
-        <!-- 2. Add Reseller Form -->
-        <form id="addResellerForm" class="form-grid" style="display: none;">
-          <label>
-            <span>Reseller Name</span>
-            <input type="text" id="newResellerName" placeholder="e.g. Rajesh Patil" required>
-          </label>
-          <label>
-            <span>Reseller PIN / Password</span>
-            <input type="password" id="newResellerPass" placeholder="e.g. rajesh@2026" required>
-          </label>
-          <button type="submit" class="btn btn-primary" style="justify-content: center; margin-top: 10px;">Create Reseller</button>
+        <!-- Tab 3: Add Partner -->
+        <form id="createForm" class="form-grid" style="display: none;">
+          <div class="form-group">
+            <label>Reseller / Partner Name</label>
+            <input type="text" id="newResellerName" placeholder="e.g. Rahul Verma" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>WhatsApp / Phone Number</label>
+              <input type="tel" id="newResellerPhone" placeholder="e.g. 9876543210" required>
+            </div>
+            <div class="form-group">
+              <label>Initial Secret PIN / Password</label>
+              <input type="password" id="newResellerPass" placeholder="e.g. rahul@2026" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top: 6px;">Create Reseller Record</button>
         </form>
 
-        <!-- 3. Update Password Form -->
-        <form id="updatePassForm" class="form-grid" style="display: none;">
-          <label>
-            <span>Select Reseller</span>
-            <select id="updatePassResellerSelect" required></select>
-          </label>
-          <label>
-            <span>New Password</span>
-            <input type="password" id="updateNewPass" placeholder="Enter new secret PIN" required>
-          </label>
-          <button type="submit" class="btn btn-primary" style="justify-content: center; margin-top: 10px;">Update Password</button>
+        <!-- Tab 4: Change Password -->
+        <form id="passwordForm" class="form-grid" style="display: none;">
+          <div class="form-group">
+            <label>Select Reseller</label>
+            <select id="passwordResellerSelect" required></select>
+          </div>
+          <div class="form-group">
+            <label>New Secret PIN</label>
+            <input type="password" id="newResellerNewPass" placeholder="Enter replacement password" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top: 6px;">Update Reseller Password</button>
         </form>
 
-        <div id="actionToast" class="toast-box"></div>
-      </div>
+        <div id="toastBox" class="toast-msg"></div>
+      </section>
 
-      <div style="text-align: center;">
-        <button id="logoutBtn" style="background: none; border: 0; color: #ef4444; font-size: 0.85rem; cursor: pointer; text-decoration: underline;">
-          Lock Dashboard
+      <!-- 2nd COMPONENT: Reseller Overview (BELOW ACTIONS) -->
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            Reseller Overview & Inventory
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Reseller Name</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Assigned Card Ranges</th>
+              </tr>
+            </thead>
+            <tbody id="resellerTableBody">
+              <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Loading system data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Lock Session Button -->
+      <div style="text-align: center; margin-top: 10px;">
+        <button id="lockSessionBtn" class="btn btn-outline" style="border: 0; color: #ef4444; font-size: 0.85rem;">
+          🔒 Lock Admin Dashboard
         </button>
       </div>
 
-    </div>
+    </main>
+
   </div>
 
   <script>
@@ -197,112 +470,200 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphdnNwbXFqbXJpbmZ4ZW5ib3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTkzOTksImV4cCI6MjEwNDAzNTM5OX0.7K-EFRRgLmLOh8BltHDH0qh61TDLbLlzCjJ5jBMXCc8';
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    let cachedAdminPass = sessionStorage.getItem('ttr_admin_pass') || '';
+    let activeAdminPass = sessionStorage.getItem('ttr_admin_pass') || '';
+    let globalOrders = [];
 
     function showToast(msg, isError = false) {
-      const toast = document.getElementById('actionToast');
+      const toast = document.getElementById('toastBox');
       toast.textContent = msg;
       toast.style.display = 'block';
-      toast.style.border = isError ? '1px solid #ef4444' : '1px solid #22c55e';
-      toast.style.background = isError ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 197, 94, 0.15)';
+      toast.style.border = isError ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(34, 197, 94, 0.4)';
+      toast.style.background = isError ? 'rgba(239, 68, 68, 0.12)' : 'rgba(34, 197, 94, 0.12)';
       toast.style.color = isError ? '#fca5a5' : '#86efac';
     }
 
-    async function loadOverview() {
+    async function loadData() {
       const { data, error } = await supabaseClient.rpc('admin_get_overview', {
-        p_admin_password: cachedAdminPass
+        p_admin_password: activeAdminPass
       });
 
       if (error || !data?.success) {
         sessionStorage.removeItem('ttr_admin_pass');
-        cachedAdminPass = '';
-        document.getElementById('dashboardSection').style.display = 'none';
-        document.getElementById('loginSection').style.display = 'block';
-        alert(data?.message || 'Session expired or incorrect password.');
+        activeAdminPass = '';
+        document.getElementById('mainDashboard').style.display = 'none';
+        document.getElementById('loginCard').style.display = 'block';
+        alert(data?.message || 'Invalid master password or expired session.');
         return;
       }
 
-      document.getElementById('loginSection').style.display = 'none';
-      document.getElementById('dashboardSection').style.display = 'block';
+      document.getElementById('loginCard').style.display = 'none';
+      document.getElementById('mainDashboard').style.display = 'block';
 
-      const tbody = document.getElementById('overviewBody');
+      // 1. Render Resellers Table & Dropdowns
+      const tbody = document.getElementById('resellerTableBody');
       const assignSelect = document.getElementById('assignResellerSelect');
-      const updateSelect = document.getElementById('updatePassResellerSelect');
+      const passwordSelect = document.getElementById('passwordResellerSelect');
+
       tbody.innerHTML = '';
       assignSelect.innerHTML = '';
-      updateSelect.innerHTML = '';
+      passwordSelect.innerHTML = '';
 
       const resellers = data.resellers || [];
       const batches = data.batches || [];
+      globalOrders = data.orders || [];
 
-      resellers.forEach(r => {
-        const opt1 = new Option(r.name, r.name);
-        const opt2 = new Option(r.name, r.name);
-        assignSelect.add(opt1);
-        updateSelect.add(opt2);
+      if (resellers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No resellers onboarded yet.</td></tr>';
+      } else {
+        resellers.forEach(r => {
+          assignSelect.add(new Option(r.name, r.name));
+          passwordSelect.add(new Option(r.name, r.name));
 
-        const rBatches = batches.filter(b => b.reseller_name === r.name && b.is_active);
-        const rangesHtml = rBatches.length > 0
-          ? rBatches.map(b => `<span class="range-tag">${b.range_start}–${b.range_end}</span>`).join(' ')
-          : '<span style="color: var(--muted);">No cards assigned</span>';
+          const rBatches = batches.filter(b => b.reseller_name === r.name && b.is_active);
+          const rangesHtml = rBatches.length > 0
+            ? rBatches.map(b => `<span class="range-pill">#${b.range_start}–#${b.range_end}</span>`).join(' ')
+            : '<span style="color: var(--text-muted); font-size: 0.8rem;">None assigned</span>';
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><strong>${r.name}</strong></td>
+            <td style="color: #cbd5e1;">${r.phone || '—'}</td>
+            <td>
+              <span class="badge ${r.is_active ? 'badge-active' : 'badge-inactive'}">
+                ${r.is_active ? '● Active' : '● Disabled'}
+              </span>
+            </td>
+            <td>${rangesHtml}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      // 2. Render Orders Table & Unfulfilled Badge
+      renderOrdersTable(globalOrders);
+    }
+
+    function renderOrdersTable(orders) {
+      const tbody = document.getElementById('ordersTableBody');
+      tbody.innerHTML = '';
+
+      const pendingOrders = orders.filter(o => o.status === 'pending');
+      const badgeCountEl = document.getElementById('openOrdersCount');
+
+      if (pendingOrders.length > 0) {
+        badgeCountEl.textContent = pendingOrders.length;
+        badgeCountEl.style.display = 'inline-block';
+      } else {
+        badgeCountEl.style.display = 'none';
+      }
+
+      if (orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No reseller orders placed yet.</td></tr>';
+        return;
+      }
+
+      orders.forEach(o => {
+        const dateStr = new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        const isPending = o.status === 'pending';
+        const cleanPhone = o.phone ? o.phone.replace(/\D/g, '').slice(-10) : '';
+
+        const phoneHtml = cleanPhone
+          ? `<a href="https://wa.me/91${cleanPhone}" target="_blank" rel="noopener" style="color: #22c55e; text-decoration: none;">💬 ${cleanPhone}</a>`
+          : '<span style="color: var(--text-muted);">—</span>';
+
+        const actionHtml = isPending
+          ? `<button class="btn btn-outline btn-xs" onclick="fulfillOrder('${o.id}', '${o.reseller_name}')" style="color: #4ade80; border-color: rgba(34, 197, 94, 0.4);">
+               ✓ Fulfill & Assign
+             </button>`
+          : `<span style="color: var(--text-muted); font-size: 0.8rem;">Completed</span>`;
 
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td><strong>${r.name}</strong></td>
-          <td><span style="color: ${r.is_active ? '#4ade80' : '#f87171'};">${r.is_active ? 'Active' : 'Disabled'}</span></td>
-          <td>${rangesHtml}</td>
+          <td><strong>${o.reseller_name}</strong></td>
+          <td>${phoneHtml}</td>
+          <td><strong>${o.card_quantity}</strong> Cards</td>
+          <td style="font-size: 0.82rem; color: var(--text-muted);">${dateStr}</td>
+          <td style="font-size: 0.82rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${o.notes || ''}">
+            ${o.notes || '—'}
+          </td>
+          <td><span class="badge ${isPending ? 'badge-pending' : 'badge-fulfilled'}">${o.status}</span></td>
+          <td>${actionHtml}</td>
         `;
         tbody.appendChild(row);
       });
     }
 
-    // Login Form
-    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+    window.fulfillOrder = async function(orderId, resellerName) {
+      if (!confirm(`Mark order for ${resellerName} as fulfilled and open card allocation?`)) return;
+
+      showToast('Updating order status...');
+      const { data, error } = await supabaseClient.rpc('admin_update_order_status', {
+        p_admin_password: activeAdminPass,
+        p_order_id: orderId,
+        p_status: 'fulfilled'
+      });
+
+      if (error || !data?.success) {
+        showToast(data?.message || 'Failed to update order status.', true);
+        return;
+      }
+
+      showToast(`Order marked fulfilled! Select card numbers to assign to ${resellerName}.`);
+      await loadData();
+
+      setTab(tabAssign, assignForm);
+      const sel = document.getElementById('assignResellerSelect');
+      if (sel) sel.value = resellerName;
+      document.getElementById('rangeStart').focus();
+    };
+
+    // Tab Switching
+    const tabOrders = document.getElementById('tabOrders');
+    const tabAssign = document.getElementById('tabAssign');
+    const tabCreate = document.getElementById('tabCreate');
+    const tabPassword = document.getElementById('tabPassword');
+
+    const ordersView = document.getElementById('ordersView');
+    const assignForm = document.getElementById('assignForm');
+    const createForm = document.getElementById('createForm');
+    const passwordForm = document.getElementById('passwordForm');
+
+    function setTab(btn, el) {
+      [tabOrders, tabAssign, tabCreate, tabPassword].forEach(b => b.classList.remove('active'));
+      [ordersView, assignForm, createForm, passwordForm].forEach(e => e.style.display = 'none');
+      btn.classList.add('active');
+      el.style.display = el === ordersView ? 'block' : 'grid';
+      document.getElementById('toastBox').style.display = 'none';
+    }
+
+    tabOrders.addEventListener('click', () => setTab(tabOrders, ordersView));
+    tabAssign.addEventListener('click', () => setTab(tabAssign, assignForm));
+    tabCreate.addEventListener('click', () => setTab(tabCreate, createForm));
+    tabPassword.addEventListener('click', () => setTab(tabPassword, passwordForm));
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      cachedAdminPass = document.getElementById('adminPasswordInput').value.trim();
-      sessionStorage.setItem('ttr_admin_pass', cachedAdminPass);
-      await loadOverview();
+      activeAdminPass = document.getElementById('adminPass').value.trim();
+      sessionStorage.setItem('ttr_admin_pass', activeAdminPass);
+      await loadData();
     });
 
-    // Refresh Button
-    document.getElementById('refreshBtn').addEventListener('click', loadOverview);
-
-    // Logout
-    document.getElementById('logoutBtn').addEventListener('click', () => {
+    document.getElementById('refreshBtn').addEventListener('click', loadData);
+    document.getElementById('lockSessionBtn').addEventListener('click', () => {
       sessionStorage.removeItem('ttr_admin_pass');
       location.reload();
     });
 
-    // Tabs
-    const tabAssignBtn = document.getElementById('tabAssignBtn');
-    const tabNewResellerBtn = document.getElementById('tabNewResellerBtn');
-    const tabUpdatePassBtn = document.getElementById('tabUpdatePassBtn');
-    const assignCardsForm = document.getElementById('assignCardsForm');
-    const addResellerForm = document.getElementById('addResellerForm');
-    const updatePassForm = document.getElementById('updatePassForm');
-
-    function setActiveTab(btn, form) {
-      [tabAssignBtn, tabNewResellerBtn, tabUpdatePassBtn].forEach(b => b.classList.remove('active'));
-      [assignCardsForm, addResellerForm, updatePassForm].forEach(f => f.style.display = 'none');
-      btn.classList.add('active');
-      form.style.display = 'grid';
-      document.getElementById('actionToast').style.display = 'none';
-    }
-
-    tabAssignBtn.addEventListener('click', () => setActiveTab(tabAssignBtn, assignCardsForm));
-    tabNewResellerBtn.addEventListener('click', () => setActiveTab(tabNewResellerBtn, addResellerForm));
-    tabUpdatePassBtn.addEventListener('click', () => setActiveTab(tabUpdatePassBtn, updatePassForm));
-
-    // Action 1: Assign Range
-    assignCardsForm.addEventListener('submit', async (e) => {
+    // Form 1: Assign Range
+    assignForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('assignResellerSelect').value;
       const start = parseInt(document.getElementById('rangeStart').value, 10);
       const end = parseInt(document.getElementById('rangeEnd').value, 10);
 
-      showToast('Assigning cards...');
+      showToast('Allocating cards...');
       const { data, error } = await supabaseClient.rpc('admin_assign_batch', {
-        p_admin_password: cachedAdminPass,
+        p_admin_password: activeAdminPass,
         p_reseller_name: name,
         p_range_start: start,
         p_range_end: end
@@ -313,61 +674,63 @@
         return;
       }
 
-      showToast(`Success! Assigned cards ${start} to ${end} to ${name}.`);
+      showToast(`Success! Assigned cards #${start} through #${end} to ${name}.`);
       document.getElementById('rangeStart').value = '';
       document.getElementById('rangeEnd').value = '';
-      loadOverview();
+      loadData();
     });
 
-    // Action 2: Add Reseller
-    addResellerForm.addEventListener('submit', async (e) => {
+    // Form 2: Create Reseller
+    createForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('newResellerName').value.trim();
+      const phone = document.getElementById('newResellerPhone').value.trim();
       const pass = document.getElementById('newResellerPass').value.trim();
 
-      showToast('Creating reseller...');
+      showToast('Creating partner account...');
       const { data, error } = await supabaseClient.rpc('admin_create_reseller', {
-        p_admin_password: cachedAdminPass,
+        p_admin_password: activeAdminPass,
         p_reseller_name: name,
-        p_reseller_password: pass
+        p_reseller_password: pass,
+        p_phone: phone
       });
 
       if (error || !data?.success) {
-        showToast(data?.message || error?.message || 'Failed to create.', true);
+        showToast(data?.message || 'Failed to create partner.', true);
         return;
       }
 
-      showToast(`Success! Reseller ${name} created.`);
+      showToast(`Partner account created for ${name}!`);
       document.getElementById('newResellerName').value = '';
+      document.getElementById('newResellerPhone').value = '';
       document.getElementById('newResellerPass').value = '';
-      loadOverview();
+      loadData();
     });
 
-    // Action 3: Update Password
-    updatePassForm.addEventListener('submit', async (e) => {
+    // Form 3: Change Password
+    passwordForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const name = document.getElementById('updatePassResellerSelect').value;
-      const pass = document.getElementById('updateNewPass').value.trim();
+      const name = document.getElementById('passwordResellerSelect').value;
+      const pass = document.getElementById('newResellerNewPass').value.trim();
 
-      showToast('Updating password...');
+      showToast('Updating PIN...');
       const { data, error } = await supabaseClient.rpc('admin_update_reseller_password', {
-        p_admin_password: cachedAdminPass,
+        p_admin_password: activeAdminPass,
         p_reseller_name: name,
         p_new_password: pass
       });
 
       if (error || !data?.success) {
-        showToast(data?.message || error?.message || 'Failed to update.', true);
+        showToast(data?.message || 'Failed to update password.', true);
         return;
       }
 
-      showToast(`Success! Password for ${name} updated.`);
-      document.getElementById('updateNewPass').value = '';
+      showToast(`Password updated for ${name}.`);
+      document.getElementById('newResellerNewPass').value = '';
     });
 
-    // Session restore
-    if (cachedAdminPass) {
-      loadOverview();
+    if (activeAdminPass) {
+      loadData();
     }
   </script>
 </body>
