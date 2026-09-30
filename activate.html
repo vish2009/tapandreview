@@ -311,11 +311,13 @@
           <input type="url" id="destUrlInput" placeholder="Paste Google Maps URL or write-review link" required>
         </div>
 
+        <!-- Direct 10-Digit Mobile Number Input for WhatsApp -->
         <div class="form-group">
-          <label for="whatsappInput">WhatsApp Connect Link (Optional)</label>
-          <input type="url" id="whatsappInput" placeholder="https://wa.me/91XXXXXXXXXX?text=Hi">
+          <label for="whatsappPhoneInput">WhatsApp Phone Number (Optional)</label>
+          <input type="tel" id="whatsappPhoneInput" placeholder="e.g. 9876543210" maxlength="10">
         </div>
 
+        <!-- Instagram Profile Link -->
         <div class="form-group">
           <label for="instagramInput">Instagram Profile Link (Optional)</label>
           <input type="url" id="instagramInput" placeholder="https://instagram.com/yourhandle">
@@ -354,6 +356,8 @@
     const cityLocationInput = document.getElementById('cityLocationInput');
     const categoryInput = document.getElementById('categoryInput');
     const destUrlInput = document.getElementById('destUrlInput');
+    const whatsappPhoneInput = document.getElementById('whatsappPhoneInput');
+    const instagramInput = document.getElementById('instagramInput');
     const btnSaveCard = document.getElementById('btnSaveCard');
     const btnResetCard = document.getElementById('btnResetCard');
     const setupToast = document.getElementById('setupToast');
@@ -408,9 +412,6 @@
       setupCard.style.display = 'block';
       gateToast.style.display = 'none';
 
-      const regWhatsappInput = document.getElementById('whatsappInput');
-      const regInstagramInput = document.getElementById('instagramInput');
-
       if (data.status === 'unregistered') {
         statusBadge.textContent = '● Available';
         statusBadge.className = 'badge badge-unregistered';
@@ -418,8 +419,8 @@
         cityLocationInput.value = '';
         categoryInput.value = 'Other';
         destUrlInput.value = '';
-        if (regWhatsappInput) regWhatsappInput.value = '';
-        if (regInstagramInput) regInstagramInput.value = '';
+        whatsappPhoneInput.value = '';
+        instagramInput.value = '';
         btnSaveCard.textContent = 'Register Card';
         btnResetCard.style.display = 'none';
         showToast(setupToast, 'PIN verified. Card is unregistered and ready for initial setup.');
@@ -430,8 +431,16 @@
         cityLocationInput.value = data.city_location || '';
         categoryInput.value = data.category || 'Other';
         destUrlInput.value = data.destination_url || '';
-        if (regWhatsappInput) regWhatsappInput.value = data.whatsapp_url || '';
-        if (regInstagramInput) regInstagramInput.value = data.instagram_url || '';
+        
+        // Extract 10 digits from stored wa.me link
+        if (data.whatsapp_url) {
+          const digits = data.whatsapp_url.replace(/\D/g, '');
+          whatsappPhoneInput.value = digits.length >= 10 ? digits.slice(-10) : digits;
+        } else {
+          whatsappPhoneInput.value = '';
+        }
+
+        instagramInput.value = data.instagram_url || '';
         btnSaveCard.textContent = 'Update Card Details';
         btnResetCard.style.display = 'inline-flex';
         showToast(setupToast, 'Card unlocked. You can now edit its destination or reset it.');
@@ -450,10 +459,10 @@
       const cat = categoryInput.value;
       const rawDest = destUrlInput.value.trim();
 
-      const regWhatsappInput = document.getElementById('whatsappInput');
-      const regInstagramInput = document.getElementById('instagramInput');
-      const waVal = regWhatsappInput ? (regWhatsappInput.value.trim() || null) : null;
-      const igVal = regInstagramInput ? (regInstagramInput.value.trim() || null) : null;
+      // Convert 10-digit phone to standard wa.me link
+      const rawWaDigits = whatsappPhoneInput.value.trim().replace(/\D/g, '');
+      const waVal = rawWaDigits.length >= 10 ? `https://wa.me/91${rawWaDigits.slice(-10)}` : null;
+      const igVal = instagramInput.value.trim() || null;
 
       btnSaveCard.disabled = true;
       btnSaveCard.textContent = 'Generating direct review link...';
@@ -543,6 +552,8 @@
       bizNameInput.value = '';
       cityLocationInput.value = '';
       destUrlInput.value = '';
+      whatsappPhoneInput.value = '';
+      instagramInput.value = '';
       categoryInput.value = 'Other';
       btnSaveCard.textContent = 'Register Card';
       btnResetCard.style.display = 'none';
