@@ -357,12 +357,13 @@
             📦 Open Orders
             <span id="openOrdersCount" class="tab-count" style="display: none;">0</span>
           </button>
-          <button type="button" class="tab-btn" id="tabAssign">Assign Cards</button>
+          <button type="button" class="tab-btn" id="tabAssign">Assign Range</button>
+          <button type="button" class="tab-btn" id="tabTransfer">🔄 Transfer Card</button>
           <button type="button" class="tab-btn" id="tabCreate">Add Partner</button>
           <button type="button" class="tab-btn" id="tabPassword">Change Password</button>
         </div>
 
-        <!-- Tab 0: Pending Sign-up Approvals with Secret Code Handshake -->
+        <!-- Tab 0: Pending Sign-up Approvals -->
         <div id="approvalsView">
           <div class="table-wrap">
             <table class="data-table">
@@ -405,10 +406,10 @@
           </div>
         </div>
 
-        <!-- Tab 2: Assign Card Range -->
+        <!-- Tab 2: Assign Range -->
         <form id="assignForm" class="form-grid" style="display: none;">
           <div class="form-group">
-            <label>Select Approved Partner</label>
+            <label>Select Partner</label>
             <select id="assignResellerSelect" required></select>
           </div>
           <div class="form-row">
@@ -424,10 +425,28 @@
           <button type="submit" class="btn btn-primary" style="margin-top: 6px;">Assign Card Range</button>
         </form>
 
-        <!-- Tab 3: Manual Add Partner -->
+        <!-- Tab 3: Transfer Single Card (Preserving Details) -->
+        <form id="transferForm" class="form-grid" style="display: none;">
+          <p style="font-size: 0.84rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 4px;">
+            Move ownership of any individual card to another partner. <strong>All business details, Google links, WhatsApp, Instagram, and tap counters will be completely preserved.</strong>
+          </p>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Card # to Move</label>
+              <input type="number" id="transferCardCode" placeholder="e.g. 21" min="1" required>
+            </div>
+            <div class="form-group">
+              <label>New Owner / Target Partner</label>
+              <select id="transferResellerSelect" required></select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top: 6px;">🔄 Transfer Card Ownership</button>
+        </form>
+
+        <!-- Tab 4: Manual Add Partner -->
         <form id="createForm" class="form-grid" style="display: none;">
           <div class="form-group">
-            <label>Reseller / Partner Name</label>
+            <label>Partner Name</label>
             <input type="text" id="newResellerName" placeholder="e.g. Rahul Verma" required>
           </div>
           <div class="form-row">
@@ -443,7 +462,7 @@
           <button type="submit" class="btn btn-primary" style="margin-top: 6px;">Create Reseller Record</button>
         </form>
 
-        <!-- Tab 4: Change Password -->
+        <!-- Tab 5: Change Password -->
         <form id="passwordForm" class="form-grid" style="display: none;">
           <div class="form-group">
             <label>Select Partner</label>
@@ -464,7 +483,7 @@
         <div class="card-header">
           <div class="card-title">
             <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
             Active Partners & Inventory
           </div>
@@ -533,13 +552,15 @@
       document.getElementById('loginCard').style.display = 'none';
       document.getElementById('mainDashboard').style.display = 'block';
 
-      // 1. Render Active Partners Table & Dropdowns
+      // Render Active Partners Table & Dropdowns
       const tbody = document.getElementById('resellerTableBody');
       const assignSelect = document.getElementById('assignResellerSelect');
+      const transferSelect = document.getElementById('transferResellerSelect');
       const passwordSelect = document.getElementById('passwordResellerSelect');
 
       tbody.innerHTML = '';
       assignSelect.innerHTML = '';
+      transferSelect.innerHTML = '';
       passwordSelect.innerHTML = '';
 
       const resellers = data.resellers || [];
@@ -552,6 +573,7 @@
       } else {
         resellers.forEach(r => {
           assignSelect.add(new Option(r.name, r.name));
+          transferSelect.add(new Option(r.name, r.name));
           passwordSelect.add(new Option(r.name, r.name));
 
           const rBatches = batches.filter(b => b.reseller_name === r.name && b.is_active);
@@ -579,10 +601,7 @@
         });
       }
 
-      // 2. Render Pending Approvals with Verification Handshake Code
       renderApprovalsTable(globalPending);
-
-      // 3. Render Orders Table
       renderOrdersTable(globalOrders);
     }
 
@@ -760,18 +779,20 @@
     const tabApprovals = document.getElementById('tabApprovals');
     const tabOrders = document.getElementById('tabOrders');
     const tabAssign = document.getElementById('tabAssign');
+    const tabTransfer = document.getElementById('tabTransfer');
     const tabCreate = document.getElementById('tabCreate');
     const tabPassword = document.getElementById('tabPassword');
 
     const approvalsView = document.getElementById('approvalsView');
     const ordersView = document.getElementById('ordersView');
     const assignForm = document.getElementById('assignForm');
+    const transferForm = document.getElementById('transferForm');
     const createForm = document.getElementById('createForm');
     const passwordForm = document.getElementById('passwordForm');
 
     function setTab(btn, el) {
-      [tabApprovals, tabOrders, tabAssign, tabCreate, tabPassword].forEach(b => b.classList.remove('active'));
-      [approvalsView, ordersView, assignForm, createForm, passwordForm].forEach(e => e.style.display = 'none');
+      [tabApprovals, tabOrders, tabAssign, tabTransfer, tabCreate, tabPassword].forEach(b => b.classList.remove('active'));
+      [approvalsView, ordersView, assignForm, transferForm, createForm, passwordForm].forEach(e => e.style.display = 'none');
       btn.classList.add('active');
       el.style.display = (el === approvalsView || el === ordersView) ? 'block' : 'grid';
       document.getElementById('toastBox').style.display = 'none';
@@ -780,6 +801,7 @@
     tabApprovals.addEventListener('click', () => setTab(tabApprovals, approvalsView));
     tabOrders.addEventListener('click', () => setTab(tabOrders, ordersView));
     tabAssign.addEventListener('click', () => setTab(tabAssign, assignForm));
+    tabTransfer.addEventListener('click', () => setTab(tabTransfer, transferForm));
     tabCreate.addEventListener('click', () => setTab(tabCreate, createForm));
     tabPassword.addEventListener('click', () => setTab(tabPassword, passwordForm));
 
@@ -822,6 +844,31 @@
       document.getElementById('rangeStart').value = '';
       document.getElementById('rangeEnd').value = '';
       loadData();
+    });
+
+    // Form: Transfer Single Card
+    transferForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const cardCode = parseInt(document.getElementById('transferCardCode').value, 10);
+      const targetName = document.getElementById('transferResellerSelect').value;
+
+      if (!confirm(`Transfer Card #${cardCode} to ${targetName}?\n\nAll existing business details, review links, and tap counters will be preserved.`)) return;
+
+      showToast(`Transferring Card #${cardCode}...`);
+      const { data, error } = await supabaseClient.rpc('admin_transfer_single_card', {
+        p_admin_password: activeAdminPass,
+        p_card_code: cardCode,
+        p_target_reseller: targetName
+      });
+
+      if (error || !data?.success) {
+        showToast(data?.message || 'Failed to transfer card.', true);
+        return;
+      }
+
+      showToast(data.message);
+      document.getElementById('transferCardCode').value = '';
+      await loadData();
     });
 
     // Form: Create Reseller manually
