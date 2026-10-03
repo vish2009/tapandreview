@@ -264,15 +264,33 @@
     }
 
     .range-pill {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       background: rgba(2, 132, 199, 0.15);
       color: #38bdf8;
       border: 1px solid rgba(2, 132, 199, 0.3);
-      padding: 2px 7px;
+      padding: 3px 8px;
       border-radius: 6px;
       font-size: 0.78rem;
       font-weight: 600;
-      margin: 2px 3px 2px 0;
+      margin: 2px 4px 2px 0;
+    }
+
+    .unassign-pill-btn {
+      background: transparent;
+      border: 0;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: bold;
+      line-height: 1;
+      padding: 0 2px;
+      transition: color 0.15s;
+    }
+
+    .unassign-pill-btn:hover {
+      color: #f87171;
     }
 
     .toast-msg {
@@ -441,12 +459,12 @@
         <div id="toastBox" class="toast-msg"></div>
       </section>
 
-      <!-- 2nd COMPONENT: Active Partners Overview -->
+      <!-- 2nd COMPONENT: Active Partners Overview with Unassign Controls -->
       <section class="card">
         <div class="card-header">
           <div class="card-title">
             <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             Active Partners & Inventory
           </div>
@@ -459,7 +477,7 @@
                 <th>Partner Name</th>
                 <th>Phone</th>
                 <th>Status</th>
-                <th>Assigned Card Ranges</th>
+                <th>Assigned Card Ranges (Click ✕ to Unassign)</th>
               </tr>
             </thead>
             <tbody id="resellerTableBody">
@@ -538,7 +556,12 @@
 
           const rBatches = batches.filter(b => b.reseller_name === r.name && b.is_active);
           const rangesHtml = rBatches.length > 0
-            ? rBatches.map(b => `<span class="range-pill">#${b.range_start}–#${b.range_end}</span>`).join(' ')
+            ? rBatches.map(b => `
+                <span class="range-pill">
+                  #${b.range_start}–#${b.range_end}
+                  <button type="button" class="unassign-pill-btn" onclick="unassignBatch('${b.id}', '${r.name}', ${b.range_start}, ${b.range_end})" title="Unassign cards #${b.range_start}–#${b.range_end}">✕</button>
+                </span>
+              `).join(' ')
             : '<span style="color: var(--text-muted); font-size: 0.8rem;">None assigned</span>';
 
           const row = document.createElement('tr');
@@ -562,6 +585,32 @@
       // 3. Render Orders Table
       renderOrdersTable(globalOrders);
     }
+
+    // Unassign Batch Functionality
+    window.unassignBatch = async function(batchId, resellerName, start, end) {
+      if (!confirm(`Unassign cards #${start}–#${end} from ${resellerName}?`)) return;
+
+      const resetCards = confirm(
+        `Do you also want to clear/reset the card links back to 'unregistered'?\n\n` +
+        `• Click OK if this was a demo card and you want to wipe it for the next demo.\n` +
+        `• Click Cancel if you want to keep the existing business setup on the card.`
+      );
+
+      showToast(`Unassigning cards #${start}–#${end}...`);
+      const { data, error } = await supabaseClient.rpc('admin_unassign_batch', {
+        p_admin_password: activeAdminPass,
+        p_batch_id: batchId,
+        p_reset_cards: resetCards
+      });
+
+      if (error || !data?.success) {
+        showToast(data?.message || 'Failed to unassign card batch.', true);
+        return;
+      }
+
+      showToast(data.message || 'Batch unassigned successfully!');
+      await loadData();
+    };
 
     function renderApprovalsTable(pendingList) {
       const tbody = document.getElementById('approvalsTableBody');
