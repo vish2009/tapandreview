@@ -360,8 +360,8 @@
       <!-- Self-Registration Form -->
       <form id="resellerRegisterForm" class="form-grid" style="display: none;" autocomplete="off">
         <div class="form-group">
-          <label>Business / Partner Name</label>
-          <input type="text" id="regName" placeholder="e.g. Cafe Bloom" required>
+          <label>Your Name</label>
+          <input type="text" id="regName" placeholder="e.g. Rahul Sharma" required>
         </div>
         <div class="form-group">
           <label>10-Digit WhatsApp Mobile Number</label>
@@ -606,7 +606,7 @@
       showAuthToast('Registration received! Opening WhatsApp to send verification code...');
 
       // Open WhatsApp with secret code verification
-      const waMsg = `Hi TapToReview,\nI just registered for an account.\n\nBusiness/Name: ${name}\nPhone: ${phone}\nVerification Code: ${verificationCode}\n\nPlease verify and approve my account.`;
+      const waMsg = `Hi TapToReview,\nI just registered for an account.\n\nName: ${name}\nPhone: ${phone}\nVerification Code: ${verificationCode}\n\nPlease verify and approve my account.`;
       window.open(`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(waMsg)}`, '_blank', 'noopener');
 
       // Pre-fill Sign-In tab
