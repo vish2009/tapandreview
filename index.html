@@ -102,11 +102,11 @@
       </div>
     </section>
 
-    <!-- DIRECT ORDER CARD SECTION WITH RESELLER VALIDATION -->
+    <!-- DIRECT ORDER CARD SECTION WITH STRUCTURED SHIPPING & PHONE VALIDATION -->
     <section id="order" class="section order" style="padding-top: 10px;">
       <div class="container">
         <h2 class="reveal">Order Your Smart Review Cards</h2>
-        <p class="muted reveal">No monthly fees. Select your pack, complete payment, and get doorstep delivery anywhere in India.</p>
+        <p class="muted reveal">No monthly fees. Select your pack, enter shipping details, and get doorstep delivery anywhere in India.</p>
 
         <div class="card reveal" style="max-width: 620px; margin: 28px auto 0; background: rgba(17, 24, 39, 0.9); border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 20px; padding: 32px 24px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);">
           
@@ -158,10 +158,39 @@
               </select>
             </div>
 
-            <!-- Delivery Address -->
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">Delivery Address & City</label>
-              <textarea id="orderAddress" rows="2" placeholder="Full shipping address with pincode" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 0.94rem; outline: none;"></textarea>
+            <!-- SEPARATE SHIPPING DETAILS -->
+            <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 14px; display: grid; gap: 14px;">
+              <div style="font-size: 0.88rem; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 6px;">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Delivery Address & Contact
+              </div>
+
+              <!-- Line 1: Receiver Name -->
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">Receiver / Contact Person Name</label>
+                <input type="text" id="orderShipName" placeholder="Name of person receiving the courier" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
+              </div>
+
+              <!-- Line 2: Street / Building / Shop Address -->
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">House / Shop / Flat / Street / Area</label>
+                <input type="text" id="orderShipAddress" placeholder="e.g. Shop #4, Ground Floor, Galaxy Tower, MG Road" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
+              </div>
+
+              <!-- Line 3 & 4: City and 6-Digit Pincode -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <label style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">City / Town</label>
+                  <input type="text" id="orderShipCity" placeholder="e.g. Pune" required style="width: 100%; min-width: 0; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <label style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">6-Digit Pincode</label>
+                  <input type="tel" id="orderShipPincode" placeholder="e.g. 411028" maxlength="6" pattern="[0-9]{6}" required style="width: 100%; min-width: 0; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
+                </div>
+              </div>
             </div>
 
             <!-- Payment Breakdown & Dynamic UPI QR -->
@@ -481,7 +510,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/app.js" defer></script>
 
-  <!-- DIRECT ORDER PROCESSING SCRIPT WITH DATABASE PHONE VALIDATION -->
+  <!-- DIRECT ORDER PROCESSING SCRIPT WITH STRUCTURED ADDRESS & PHONE VALIDATION -->
   <script>
     (function() {
       const ADMIN_UPI_ID = '7620952720@ybl';
@@ -506,6 +535,13 @@
       const custPin = document.getElementById('orderCustPin');
       const custPhone = document.getElementById('orderCustPhone');
       const phoneFeedback = document.getElementById('phoneFeedback');
+
+      // Structured Shipping Inputs
+      const shipNameInput = document.getElementById('orderShipName');
+      const shipAddressInput = document.getElementById('orderShipAddress');
+      const shipCityInput = document.getElementById('orderShipCity');
+      const shipPincodeInput = document.getElementById('orderShipPincode');
+
       const packSelect = document.getElementById('orderPackSelect');
       const amountEl = document.getElementById('homeOrderAmount');
       const rateNoteEl = document.getElementById('homeOrderRateNote');
@@ -517,6 +553,7 @@
 
       let isPartnerVerified = false;
       let verifiedPartnerName = '';
+      let isShipNameManuallyEdited = false;
 
       function updatePricing() {
         const qty = parseInt(packSelect.value, 10);
@@ -531,6 +568,7 @@
         qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=2&data=${encodeURIComponent(upiUri)}`;
       }
 
+      // Check partner registration in Supabase database
       async function validatePartnerPhone() {
         const rawDigits = custPhone.value.replace(/\D/g, '');
         if (rawDigits.length < 10) {
@@ -563,6 +601,11 @@
           phoneFeedback.style.color = '#4ade80';
           phoneFeedback.textContent = `✓ Partner Verified: Welcome back, ${data.name}!`;
           submitBtn.disabled = false;
+
+          // Auto-fill receiver name if not manually edited
+          if (!isShipNameManuallyEdited && !shipNameInput.value) {
+            shipNameInput.value = data.name;
+          }
           updatePricing();
         }
       }
@@ -597,8 +640,19 @@
         }
       });
 
+      // Auto-populate receiver name from customer name as they type
+      custName.addEventListener('input', () => {
+        updatePricing();
+        if (!isResellerCheck.checked && !isShipNameManuallyEdited) {
+          shipNameInput.value = custName.value;
+        }
+      });
+
+      shipNameInput.addEventListener('input', () => {
+        isShipNameManuallyEdited = true;
+      });
+
       packSelect.addEventListener('change', updatePricing);
-      custName.addEventListener('input', updatePricing);
       updatePricing();
 
       // Submit Direct Order
@@ -609,8 +663,13 @@
         const phone = custPhone.value.trim().replace(/\D/g, '');
         const pin = custPin.value.trim();
         const qty = parseInt(packSelect.value, 10);
-        const address = document.getElementById('orderAddress').value.trim();
         const tier = PRICING[qty];
+
+        // Gather structured shipping inputs
+        const shipName = shipNameInput.value.trim();
+        const shipAddress = shipAddressInput.value.trim();
+        const shipCity = shipCityInput.value.trim();
+        const shipPincode = shipPincodeInput.value.trim().replace(/\D/g, '');
 
         if (phone.length < 10) {
           showMsg('Please enter a valid 10-digit mobile number.', true);
@@ -627,6 +686,29 @@
           return;
         }
 
+        if (!shipName) {
+          showMsg('Please enter the receiver / contact person name for delivery.', true);
+          return;
+        }
+
+        if (!shipAddress) {
+          showMsg('Please enter your house / shop / street address.', true);
+          return;
+        }
+
+        if (!shipCity) {
+          showMsg('Please enter your city / town.', true);
+          return;
+        }
+
+        if (shipPincode.length !== 6 || !/^\d{6}$/.test(shipPincode)) {
+          showMsg('Please enter a valid 6-digit delivery pincode.', true);
+          return;
+        }
+
+        // Combine all separate lines into a single complete delivery address string
+        const combinedShippingAddress = `${shipName}, ${shipAddress}, ${shipCity} - ${shipPincode}`;
+
         submitBtn.disabled = true;
         submitBtn.textContent = 'Processing order...';
         showMsg('Placing your order...');
@@ -637,7 +719,7 @@
           p_phone: phone,
           p_pin: pin,
           p_quantity: qty,
-          p_notes: address,
+          p_notes: combinedShippingAddress,
           p_total_amount: tier.total
         });
 
@@ -652,7 +734,7 @@
         showMsg('Order received! Opening WhatsApp to confirm payment...');
 
         const partnerName = data.reseller_name || name || 'Customer';
-        const waMsg = `Hi TapToReview,\nI just placed an order!\n\nName: ${partnerName}\nPhone: ${phone}\nQuantity: ${qty} Cards\nTotal Amount: ₹${tier.total}\nAddress: ${address}\n\nPayment completed via UPI. Please confirm shipment.`;
+        const waMsg = `Hi TapToReview,\nI just placed an order!\n\nPartner/Name: ${partnerName}\nPhone: ${phone}\nQuantity: ${qty} Cards\nTotal Amount: ₹${tier.total}\n\nShipping Address:\nReceiver: ${shipName}\nAddress: ${shipAddress}\nCity: ${shipCity}\nPincode: ${shipPincode}\n\nPayment completed via UPI. Please confirm shipment.`;
         window.open(`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(waMsg)}`, '_blank', 'noopener');
       });
 
