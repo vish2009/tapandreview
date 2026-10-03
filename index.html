@@ -36,12 +36,13 @@
         </button>
 
         <ul class="nav-list" id="nav-list">
+          <li><a href="#order">Order Cards</a></li>
           <li><a href="#leaderboard">Leaderboard</a></li>
           <li><a href="#how-it-works">How it Works</a></li>
           <li><a href="#benefits">Benefits</a></li>
           <li><a href="#pricing">Pricing</a></li>
           <li><a href="#faq">FAQ</a></li>
-          <li><a class="btn btn-cta" id="contact-cta" href="/reseller">Sign In / Register</a></li>
+          <li><a class="btn btn-cta" id="contact-cta" href="/reseller">Sign In / Portal</a></li>
         </ul>
       </nav>
     </div>
@@ -57,7 +58,7 @@
           <p class="hero-lead">Zero typing. Zero search friction. Hand the card, tap any smartphone, and collect authentic reviews instantly.</p>
           
           <div class="hero-ctas">
-            <a class="btn btn-primary" id="hero-order" href="#order">Get Started Now</a>
+            <a class="btn btn-primary" id="hero-order" href="#order">Order Cards Now</a>
             <a class="btn btn-outline" href="#how-it-works">How it Works</a>
           </div>
 
@@ -101,42 +102,99 @@
       </div>
     </section>
 
-    <!-- GET STARTED / PORTAL SECTION (MOVED TO TOP) -->
+    <!-- DIRECT ORDER CARD SECTION WITH RESELLER VALIDATION -->
     <section id="order" class="section order" style="padding-top: 10px;">
       <div class="container">
-        <h2 class="reveal">Get Started with TapToReview</h2>
-        <p class="muted reveal">Register your business, order NFC smart cards, and manage your review destinations in one place.</p>
+        <h2 class="reveal">Order Your Smart Review Cards</h2>
+        <p class="muted reveal">No monthly fees. Select your pack, complete payment, and get doorstep delivery anywhere in India.</p>
 
-        <div class="card reveal" style="max-width: 640px; margin: 28px auto 0; background: rgba(17, 24, 39, 0.85); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 20px; padding: 36px 24px; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);">
+        <div class="card reveal" style="max-width: 620px; margin: 28px auto 0; background: rgba(17, 24, 39, 0.9); border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 20px; padding: 32px 24px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);">
           
-          <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: rgba(212, 175, 55, 0.15); border-radius: 50%; margin-bottom: 18px;">
-            <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#d4af37">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
+          <form id="homeOrderForm" style="display: grid; gap: 16px; text-align: left;">
+            
+            <!-- Reseller / Existing User Checkbox -->
+            <div style="background: rgba(2, 132, 199, 0.1); border: 1px solid rgba(2, 132, 199, 0.3); border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+              <input type="checkbox" id="isResellerCheck" style="width: 18px; height: 18px; accent-color: #d4af37; cursor: pointer;">
+              <label for="isResellerCheck" style="font-size: 0.88rem; font-weight: 600; color: #38bdf8; cursor: pointer; margin: 0;">
+                I am already an existing registered partner / customer
+              </label>
+            </div>
 
-          <h3 style="font-size: 1.45rem; font-weight: 800; color: #ffffff; margin-bottom: 10px;">
-            Customer & Partner Portal
-          </h3>
+            <!-- 10-Digit Mobile Input -->
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">10-Digit WhatsApp Mobile Number</label>
+              <input type="tel" id="orderCustPhone" placeholder="e.g. 9876543210" maxlength="10" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
+              <!-- Live Database Verification Message -->
+              <div id="phoneFeedback" style="font-size: 0.82rem; font-weight: 600; display: none; margin-top: 2px;"></div>
+            </div>
 
-          <p style="font-size: 0.95rem; color: #94a3b8; max-width: 480px; margin: 0 auto 26px; line-height: 1.6;">
-            Sign up in 30 seconds with your mobile number and a 4-digit PIN to place smart card orders, make UPI payments, and manage your review cards anytime.
-          </p>
+            <!-- Customer Name (Hidden if verified reseller) -->
+            <div id="groupName" style="display: flex; flex-direction: column; gap: 6px;">
+              <label style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">Your Full Name / Business Name</label>
+              <input type="text" id="orderCustName" placeholder="e.g. Rahul Sharma" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
+            </div>
 
-          <div style="display: flex; flex-direction: column; gap: 12px; max-width: 380px; margin: 0 auto;">
-            <a class="btn btn-primary" href="/reseller" style="font-size: 1.05rem; padding: 15px 24px; text-decoration: none;">
-              🚀 Sign In / Register Account
-            </a>
-            <a class="btn btn-outline" href="https://wa.me/917620952720?text=Hi%20TapToReview,%20I%20have%20a%20question%20before%20ordering" target="_blank" rel="noopener" style="text-decoration: none;">
-              💬 Chat with us on WhatsApp
-            </a>
-          </div>
+            <!-- 4-Digit Security PIN (Hidden if verified reseller) -->
+            <div id="groupPin" style="display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <label style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">Create 4-Digit Security PIN</label>
+                <span style="font-size: 0.74rem; color: #d4af37; font-weight: 600;">Important</span>
+              </div>
+              <input type="password" id="orderCustPin" placeholder="e.g. 1234" maxlength="4" inputmode="numeric" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
+              <p style="font-size: 0.82rem; color: #fbbf24; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 6px; padding: 8px 10px; margin-top: 4px; line-height: 1.4;">
+                🔐 <strong>Password to activate your card:</strong> This 4-digit PIN is the secret password you will use to activate and program your physical review card(s) at <strong>taptoreview.in/activate</strong>.
+              </p>
+            </div>
 
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 0.82rem; color: #cbd5e1;">
-            <div>⚡ <strong>Instant Setup</strong><br><span style="color: #64748b;">4-Digit PIN login</span></div>
-            <div>💳 <strong>Easy Payments</strong><br><span style="color: #64748b;">Instant UPI & QR</span></div>
-            <div>🚚 <strong>Pan-India</strong><br><span style="color: #64748b;">Doorstep delivery</span></div>
-          </div>
+            <!-- Quantity Pack Selector -->
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">Select Quantity</label>
+              <select id="orderPackSelect" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
+                <option value="1">1 Card — Single (₹350/card = ₹350)</option>
+                <option value="5">5 Cards — Starter Pack (₹270/card = ₹1,350)</option>
+                <option value="10" selected>10 Cards — Pro Pack (₹240/card = ₹2,400)</option>
+                <option value="20">20 Cards — Growth Pack (₹220/card = ₹4,400)</option>
+                <option value="50">50 Cards — Agency Pack (₹190/card = ₹9,500)</option>
+              </select>
+            </div>
+
+            <!-- Delivery Address -->
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">Delivery Address & City</label>
+              <textarea id="orderAddress" rows="2" placeholder="Full shipping address with pincode" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 0.94rem; outline: none;"></textarea>
+            </div>
+
+            <!-- Payment Breakdown & Dynamic UPI QR -->
+            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 12px; padding: 16px; margin-top: 4px;">
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.07);">
+                <div>
+                  <span style="font-size: 0.82rem; color: #94a3b8;">Payable Amount:</span>
+                  <div id="homeOrderRateNote" style="font-size: 0.78rem; color: #38bdf8;">Rate: ₹240/card</div>
+                </div>
+                <div id="homeOrderAmount" style="font-size: 1.55rem; font-weight: 800; color: #d4af37;">₹2,400</div>
+              </div>
+
+              <!-- UPI QR Display -->
+              <div style="text-align: center; margin-bottom: 12px;">
+                <p style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 6px;">Scan with GPay / PhonePe / Paytm:</p>
+                <div style="background: #fff; padding: 10px; border-radius: 10px; display: inline-block;">
+                  <img id="homeUpiQr" style="width: 150px; height: 150px; display: block;" alt="UPI QR Code" src="">
+                </div>
+                <div style="font-size: 0.76rem; color: #cbd5e1; margin-top: 4px;">UPI ID: <strong>7620952720@ybl</strong></div>
+              </div>
+
+              <a id="btnHomeUpiPay" href="#" class="btn" style="width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-weight: 700; padding: 12px; border-radius: 8px; text-decoration: none; display: flex; justify-content: center; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);">
+                ⚡ Pay via UPI App (GPay / PhonePe / Paytm)
+              </a>
+            </div>
+
+            <button type="submit" id="btnSubmitHomeOrder" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 1rem; margin-top: 6px;">
+              Place Order & Confirm on WhatsApp
+            </button>
+
+            <div id="homeOrderToast" style="display: none; padding: 10px; border-radius: 8px; font-size: 0.88rem; text-align: center; margin-top: 6px;"></div>
+
+          </form>
 
         </div>
       </div>
@@ -262,7 +320,7 @@
               <div class="price-list">
                 <div class="price-row">
                   <span><strong>1 card or Bulk</strong><small>Instant NFC tap</small></span>
-                  <a class="btn btn-primary" href="/reseller">Order Card</a>
+                  <a class="btn btn-primary" href="#order">Order Card</a>
                 </div>
               </div>
             </div>
@@ -281,7 +339,7 @@
               <div class="price-list">
                 <div class="price-row">
                   <span><strong>1 card or Bulk</strong><small>High visibility display</small></span>
-                  <a class="btn btn-primary" href="/reseller">Order Card</a>
+                  <a class="btn btn-primary" href="#order">Order Card</a>
                 </div>
               </div>
             </div>
@@ -402,7 +460,7 @@
           <a class="footer-contact-link whatsapp-link" href="https://wa.me/917620952720?text=Hi%20TapToReview" target="_blank" rel="noopener" aria-label="Chat with TapToReview on WhatsApp" title="Chat on WhatsApp">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.33 4.95L2 22l5.28-1.39a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm5.8 14.07c-.24.68-1.4 1.32-1.94 1.4-.5.08-1.12.11-1.8-.11-.42-.13-.96-.31-1.65-.6-2.9-1.25-4.8-4.17-4.94-4.36-.14-.19-1.18-1.57-1.18-3 0-1.42.75-2.12 1.02-2.41.26-.29.57-.36.76-.36.19 0 .38 0 .55.01.18.01.41-.07.64.49.24.58.81 2 .88 2.15.07.15.12.32.02.51-.1.19-.15.31-.29.48-.15.17-.31.38-.44.51-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.02 1.12 1 2.06 1.31 2.35 1.46.29.15.46.13.63-.05.17-.19.72-.84.91-1.13.19-.29.38-.24.64-.14.26.1 1.66.78 1.94.92.29.15.48.22.55.34.07.13.07.72-.17 1.4Z"/></svg>
           </a>
-          <a class="footer-contact-link instagram-link" href="url?id=9" target="_blank" rel="noopener" aria-label="Follow TapToReview on Instagram" title="Follow on Instagram">
+          <a class="footer-contact-link instagram-link" href="https://www.instagram.com/taptoreview.in/" target="_blank" rel="noopener" aria-label="Follow TapToReview on Instagram" title="Follow on Instagram">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5Zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5ZM17.75 6a1.25 1.25 0 1 1-1.25 1.25A1.25 1.25 0 0 1 17.75 6Z"/></svg>
           </a>
         </div>
@@ -422,5 +480,190 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/app.js" defer></script>
+
+  <!-- DIRECT ORDER PROCESSING SCRIPT WITH DATABASE PHONE VALIDATION -->
+  <script>
+    (function() {
+      const ADMIN_UPI_ID = '7620952720@ybl';
+      const ADMIN_PHONE = '917620952720';
+
+      const PRICING = {
+        1:  { total: 350,  rate: 350 },
+        5:  { total: 1350, rate: 270 },
+        10: { total: 2400, rate: 240 },
+        20: { total: 4400, rate: 220 },
+        50: { total: 9500, rate: 190 }
+      };
+
+      const supabaseUrl = 'https://zavspmqjmrinfxenbosz.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphdnNwbXFqbXJpbmZ4ZW5ib3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTkzOTksImV4cCI6MjEwNDAzNTM5OX0.7K-EFRRgLmLOh8BltHDH0qh61TDLbLlzCjJ5jBMXCc8';
+      const localSupabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+      const isResellerCheck = document.getElementById('isResellerCheck');
+      const groupName = document.getElementById('groupName');
+      const groupPin = document.getElementById('groupPin');
+      const custName = document.getElementById('orderCustName');
+      const custPin = document.getElementById('orderCustPin');
+      const custPhone = document.getElementById('orderCustPhone');
+      const phoneFeedback = document.getElementById('phoneFeedback');
+      const packSelect = document.getElementById('orderPackSelect');
+      const amountEl = document.getElementById('homeOrderAmount');
+      const rateNoteEl = document.getElementById('homeOrderRateNote');
+      const qrEl = document.getElementById('homeUpiQr');
+      const payLinkEl = document.getElementById('btnHomeUpiPay');
+      const form = document.getElementById('homeOrderForm');
+      const submitBtn = document.getElementById('btnSubmitHomeOrder');
+      const toast = document.getElementById('homeOrderToast');
+
+      let isPartnerVerified = false;
+      let verifiedPartnerName = '';
+
+      function updatePricing() {
+        const qty = parseInt(packSelect.value, 10);
+        const tier = PRICING[qty] || { total: qty * 240, rate: 240 };
+        amountEl.textContent = `₹${tier.total.toLocaleString('en-IN')}`;
+        rateNoteEl.textContent = `Rate: ₹${tier.rate}/card`;
+
+        const nameVal = verifiedPartnerName || custName.value.trim() || 'Customer';
+        const note = encodeURIComponent(`TapToReview ${qty} Cards - ${nameVal}`);
+        const upiUri = `upi://pay?pa=${ADMIN_UPI_ID}&pn=TapToReview&am=${tier.total}&cu=INR&tn=${note}`;
+        payLinkEl.href = upiUri;
+        qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=2&data=${encodeURIComponent(upiUri)}`;
+      }
+
+      async function validatePartnerPhone() {
+        const rawDigits = custPhone.value.replace(/\D/g, '');
+        if (rawDigits.length < 10) {
+          phoneFeedback.style.display = 'block';
+          phoneFeedback.style.color = '#94a3b8';
+          phoneFeedback.textContent = 'Enter your 10-digit registered number...';
+          isPartnerVerified = false;
+          submitBtn.disabled = true;
+          return;
+        }
+
+        const cleanPhone = rawDigits.slice(-10);
+        phoneFeedback.style.display = 'block';
+        phoneFeedback.style.color = '#38bdf8';
+        phoneFeedback.textContent = 'Checking partner records...';
+
+        const { data, error } = await localSupabase.rpc('check_reseller_phone', {
+          p_phone: cleanPhone
+        });
+
+        if (error || !data?.exists) {
+          isPartnerVerified = false;
+          verifiedPartnerName = '';
+          phoneFeedback.style.color = '#f87171';
+          phoneFeedback.textContent = '✕ Number not found in partner records. Please check the number or uncheck the box above to register as a new customer.';
+          submitBtn.disabled = true;
+        } else {
+          isPartnerVerified = true;
+          verifiedPartnerName = data.name;
+          phoneFeedback.style.color = '#4ade80';
+          phoneFeedback.textContent = `✓ Partner Verified: Welcome back, ${data.name}!`;
+          submitBtn.disabled = false;
+          updatePricing();
+        }
+      }
+
+      custPhone.addEventListener('input', () => {
+        if (isResellerCheck.checked) {
+          validatePartnerPhone();
+        } else {
+          phoneFeedback.style.display = 'none';
+          submitBtn.disabled = false;
+        }
+      });
+
+      isResellerCheck.addEventListener('change', () => {
+        if (isResellerCheck.checked) {
+          groupPin.style.display = 'none';
+          custPin.removeAttribute('required');
+          custPin.value = '';
+          groupName.style.display = 'none';
+          custName.removeAttribute('required');
+          validatePartnerPhone();
+        } else {
+          groupPin.style.display = 'flex';
+          custPin.setAttribute('required', 'true');
+          groupName.style.display = 'flex';
+          custName.setAttribute('required', 'true');
+          phoneFeedback.style.display = 'none';
+          submitBtn.disabled = false;
+          isPartnerVerified = false;
+          verifiedPartnerName = '';
+          updatePricing();
+        }
+      });
+
+      packSelect.addEventListener('change', updatePricing);
+      custName.addEventListener('input', updatePricing);
+      updatePricing();
+
+      // Submit Direct Order
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const isExisting = isResellerCheck.checked;
+        const name = isExisting ? verifiedPartnerName : custName.value.trim();
+        const phone = custPhone.value.trim().replace(/\D/g, '');
+        const pin = custPin.value.trim();
+        const qty = parseInt(packSelect.value, 10);
+        const address = document.getElementById('orderAddress').value.trim();
+        const tier = PRICING[qty];
+
+        if (phone.length < 10) {
+          showMsg('Please enter a valid 10-digit mobile number.', true);
+          return;
+        }
+
+        if (isExisting && !isPartnerVerified) {
+          showMsg('Please enter a registered partner mobile number before ordering.', true);
+          return;
+        }
+
+        if (!isExisting && (pin.length !== 4 || !/^\d{4}$/.test(pin))) {
+          showMsg('PIN must be exactly 4 digits.', true);
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing order...';
+        showMsg('Placing your order...');
+
+        const { data, error } = await localSupabase.rpc('place_direct_order', {
+          p_is_existing: isExisting,
+          p_name: name,
+          p_phone: phone,
+          p_pin: pin,
+          p_quantity: qty,
+          p_notes: address,
+          p_total_amount: tier.total
+        });
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Place Order & Confirm on WhatsApp';
+
+        if (error || !data?.success) {
+          showMsg(data?.message || error?.message || 'Failed to place order.', true);
+          return;
+        }
+
+        showMsg('Order received! Opening WhatsApp to confirm payment...');
+
+        const partnerName = data.reseller_name || name || 'Customer';
+        const waMsg = `Hi TapToReview,\nI just placed an order!\n\nName: ${partnerName}\nPhone: ${phone}\nQuantity: ${qty} Cards\nTotal Amount: ₹${tier.total}\nAddress: ${address}\n\nPayment completed via UPI. Please confirm shipment.`;
+        window.open(`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(waMsg)}`, '_blank', 'noopener');
+      });
+
+      function showMsg(msg, isErr = false) {
+        toast.textContent = msg;
+        toast.style.display = 'block';
+        toast.style.border = isErr ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(34, 197, 94, 0.4)';
+        toast.style.background = isErr ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 197, 94, 0.15)';
+        toast.style.color = isErr ? '#fca5a5' : '#86efac';
+      }
+    })();
+  </script>
 </body>
 </html>
