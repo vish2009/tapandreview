@@ -102,11 +102,11 @@
       </div>
     </section>
 
-    <!-- DIRECT ORDER CARD SECTION (1, 3, 5, 10 CARDS) -->
+    <!-- DIRECT ORDER CARD SECTION (ALL-INCLUSIVE DELIVERY & VOLUME BENEFIT) -->
     <section id="order" class="section order" style="padding-top: 10px;">
       <div class="container">
         <h2 class="reveal">Order Your Smart Review Cards</h2>
-        <p class="muted reveal">No monthly fees. Select your pack, enter shipping details, and get doorstep delivery anywhere in India.</p>
+        <p class="muted reveal">No monthly fees. Select your pack, enter delivery details, and get doorstep courier dispatch anywhere in India.</p>
 
         <div class="card reveal" style="max-width: 620px; margin: 28px auto 0; background: rgba(17, 24, 39, 0.9); border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 20px; padding: 32px 24px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);">
           
@@ -144,6 +144,12 @@
               <p style="font-size: 0.82rem; color: #fbbf24; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 6px; padding: 8px 10px; margin-top: 4px; line-height: 1.4;">
                 🔐 <strong>Password to activate your card:</strong> This 4-digit PIN is the secret password you will use to activate and program your physical review card(s) at <strong>taptoreview.in/activate</strong>.
               </p>
+            </div>
+
+            <!-- Notice: All Prices Inclusive of Delivery & Volume Benefit -->
+            <div style="background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.25); border-radius: 10px; padding: 10px 14px; font-size: 0.82rem; color: #86efac; line-height: 1.45;">
+              🚚 <strong>All prices are 100% inclusive of doorstep delivery across India.</strong><br>
+              💡 <strong>Quantity benefit:</strong> The per-card price goes down as you order more (from ₹350/card for 1 card down to ₹240/card for 10 cards).
             </div>
 
             <!-- Quantity Pack Selector (1, 3, 5, 10 Only) -->
@@ -192,14 +198,28 @@
               </div>
             </div>
 
-            <!-- Payment Breakdown & Dynamic UPI QR -->
+            <!-- Payment Breakdown & Dynamic UPI QR (Inclusive of Delivery) -->
             <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 12px; padding: 16px; margin-top: 4px;">
-              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.07);">
+              
+              <!-- Effective Rate Breakdown -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.86rem;">
+                <span style="color: #94a3b8;">Effective Price Per Card:</span>
+                <strong id="homeOrderRateNote" style="color: #38bdf8;">₹270/card</strong>
+              </div>
+
+              <!-- Delivery Status Line -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.07); font-size: 0.86rem;">
+                <span style="color: #94a3b8;">Doorstep Courier Delivery:</span>
+                <strong style="color: #4ade80;">FREE (Included in price)</strong>
+              </div>
+
+              <!-- Total Payable Amount -->
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;">
                 <div>
-                  <span style="font-size: 0.82rem; color: #94a3b8;">Payable Amount:</span>
-                  <div id="homeOrderRateNote" style="font-size: 0.78rem; color: #38bdf8;">Rate: ₹270/card</div>
+                  <span style="font-size: 0.84rem; font-weight: 700; color: #cbd5e1;">Total Payable Amount:</span>
+                  <div style="font-size: 0.74rem; color: #94a3b8;">(All-inclusive, no hidden charges)</div>
                 </div>
-                <div id="homeOrderAmount" style="font-size: 1.55rem; font-weight: 800; color: #d4af37;">₹1,350</div>
+                <div id="homeOrderAmount" style="font-size: 1.6rem; font-weight: 800; color: #d4af37;">₹1,350</div>
               </div>
 
               <!-- UPI QR Display -->
@@ -347,7 +367,7 @@
               </div>
               <div class="price-list">
                 <div class="price-row">
-                  <span><strong>1 to 10 cards</strong><small>Instant NFC tap</small></span>
+                  <span><strong>1 card or Bulk</strong><small>Instant NFC tap</small></span>
                   <a class="btn btn-primary" href="#order">Order Card</a>
                 </div>
               </div>
@@ -366,7 +386,7 @@
               </div>
               <div class="price-list">
                 <div class="price-row">
-                  <span><strong>1 to 10 cards</strong><small>High visibility display</small></span>
+                  <span><strong>1 card or Bulk</strong><small>High visibility display</small></span>
                   <a class="btn btn-primary" href="#order">Order Card</a>
                 </div>
               </div>
@@ -509,7 +529,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/app.js" defer></script>
 
-  <!-- DIRECT ORDER PROCESSING SCRIPT (1, 3, 5, 10 CARDS) -->
+  <!-- DIRECT ORDER PROCESSING SCRIPT (1, 3, 5, 10 CARDS - FREE DELIVERY INCLUDED) -->
   <script>
     (function() {
       const ADMIN_UPI_ID = '7620952720@ybl';
@@ -557,7 +577,7 @@
         const qty = parseInt(packSelect.value, 10);
         const tier = PRICING[qty] || { total: qty * 240, rate: 240 };
         amountEl.textContent = `₹${tier.total.toLocaleString('en-IN')}`;
-        rateNoteEl.textContent = `Rate: ₹${tier.rate}/card`;
+        rateNoteEl.textContent = `₹${tier.rate}/card`;
 
         const nameVal = verifiedPartnerName || custName.value.trim() || 'Customer';
         const note = encodeURIComponent(`TapToReview ${qty} Cards - ${nameVal}`);
@@ -600,7 +620,6 @@
           phoneFeedback.textContent = `✓ Partner Verified: Welcome back, ${data.name}!`;
           submitBtn.disabled = false;
 
-          // Auto-fill receiver name if not manually edited
           if (!isShipNameManuallyEdited && !shipNameInput.value) {
             shipNameInput.value = data.name;
           }
@@ -638,7 +657,6 @@
         }
       });
 
-      // Auto-populate receiver name from customer name as they type
       custName.addEventListener('input', () => {
         updatePricing();
         if (!isResellerCheck.checked && !isShipNameManuallyEdited) {
@@ -663,7 +681,6 @@
         const qty = parseInt(packSelect.value, 10);
         const tier = PRICING[qty];
 
-        // Gather structured shipping inputs
         const shipName = shipNameInput.value.trim();
         const shipAddress = shipAddressInput.value.trim();
         const shipCity = shipCityInput.value.trim();
@@ -704,7 +721,6 @@
           return;
         }
 
-        // Combine all separate lines into a single complete delivery address string
         const combinedShippingAddress = `${shipName}, ${shipAddress}, ${shipCity} - ${shipPincode}`;
 
         submitBtn.disabled = true;
@@ -732,7 +748,7 @@
         showMsg('Order received! Opening WhatsApp to confirm payment...');
 
         const partnerName = data.reseller_name || name || 'Customer';
-        const waMsg = `Hi TapToReview,\nI just placed an order!\n\nPartner/Name: ${partnerName}\nPhone: ${phone}\nQuantity: ${qty} Cards\nTotal Amount: ₹${tier.total}\n\nShipping Address:\nReceiver: ${shipName}\nAddress: ${shipAddress}\nCity: ${shipCity}\nPincode: ${shipPincode}\n\nPayment completed via UPI. Please confirm shipment.`;
+        const waMsg = `Hi TapToReview,\nI just placed an order!\n\nPartner/Name: ${partnerName}\nPhone: ${phone}\nQuantity: ${qty} Cards (${tier.rate}/card)\nTotal Amount: ₹${tier.total} (Free Doorstep Delivery Included)\n\nShipping Address:\nReceiver: ${shipName}\nAddress: ${shipAddress}\nCity: ${shipCity}\nPincode: ${shipPincode}\n\nPayment completed via UPI. Please confirm shipment.`;
         window.open(`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(waMsg)}`, '_blank', 'noopener');
       });
 
