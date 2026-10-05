@@ -9,7 +9,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     :root {
       --bg: #090d16;
@@ -96,6 +95,61 @@
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    /* Live Test Banner */
+    .test-box {
+      display: none;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin-bottom: 18px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .test-box-meta {
+      min-width: 180px;
+    }
+
+    .test-box-label {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .test-box-url {
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      word-break: break-all;
+      font-family: monospace;
+    }
+
+    .btn-test {
+      background: rgba(56, 189, 248, 0.16);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      padding: 8px 14px;
+      font-size: 0.84rem;
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition);
+    }
+
+    .btn-test:hover {
+      background: rgba(56, 189, 248, 0.28);
+      color: #fff;
     }
 
     /* Forms */
@@ -230,7 +284,6 @@
 <body>
 
   <div class="wrap">
-
     <header class="header">
       <a href="/">
         <img src="/assets/taptoreview-logo.svg" alt="TapToReview.in" class="logo-img">
@@ -279,6 +332,20 @@
         <span id="statusBadge" class="badge"></span>
       </div>
 
+      <!-- Reseller Live Redirect Test Box -->
+      <div id="cardTestBox" class="test-box">
+        <div class="test-box-meta">
+          <span class="test-box-label">🔗 Live Card Redirect Link</span>
+          <span id="testLinkUrl" class="test-box-url"></span>
+        </div>
+        <a id="btnTestCard" href="#" target="_blank" rel="noopener noreferrer" class="btn-test">
+          <span>Open Link in New Tab</span>
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
+      </div>
+
       <form id="cardSetupForm" class="form-grid">
         <div class="form-group">
           <label for="bizNameInput">Business Name</label>
@@ -290,7 +357,6 @@
             <label for="cityLocationInput">City / Area Location</label>
             <input type="text" id="cityLocationInput" placeholder="e.g. Kalyani Nagar, Pune" required>
           </div>
-
           <div class="form-group">
             <label for="categoryInput">Business Category</label>
             <select id="categoryInput" required>
@@ -335,7 +401,6 @@
 
       <div id="setupToast" class="toast-box"></div>
     </div>
-
   </div>
 
   <script>
@@ -363,12 +428,27 @@
     const btnResetCard = document.getElementById('btnResetCard');
     const setupToast = document.getElementById('setupToast');
 
+    // Test box elements
+    const cardTestBox = document.getElementById('cardTestBox');
+    const testLinkUrl = document.getElementById('testLinkUrl');
+    const btnTestCard = document.getElementById('btnTestCard');
+
+    function updateLiveTestLink(code, show = true) {
+      if (!show) {
+        cardTestBox.style.display = 'none';
+        return;
+      }
+      const fullUrl = `${window.location.origin}/r/${code}`;
+      testLinkUrl.textContent = fullUrl;
+      btnTestCard.href = fullUrl;
+      cardTestBox.style.display = 'flex';
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const paramCode = urlParams.get('code');
     if (paramCode && /^\d+$/.test(paramCode)) {
       cardCodeInput.value = paramCode;
     }
-
     resellerPinInput.value = '';
 
     function showToast(el, msg, isError = false) {
@@ -401,6 +481,7 @@
 
       if (error || !data?.success) {
         setupCard.style.display = 'none';
+        updateLiveTestLink(code, false);
         showToast(gateToast, data?.message || error?.message || 'Invalid reseller PIN or unauthorized card.', true);
         return;
       }
@@ -420,6 +501,7 @@
         instagramInput.value = '';
         btnSaveCard.textContent = 'Register Card';
         btnResetCard.style.display = 'none';
+        updateLiveTestLink(code, false);
         showToast(setupToast, 'PIN verified. Card is unregistered and ready for initial setup.');
       } else {
         statusBadge.textContent = '● Active / Registered';
@@ -428,7 +510,7 @@
         cityLocationInput.value = data.city_location || '';
         categoryInput.value = data.category || 'Other';
         destUrlInput.value = data.destination_url || '';
-        
+
         if (data.whatsapp_url) {
           const digits = data.whatsapp_url.replace(/\D/g, '');
           whatsappPhoneInput.value = digits.length >= 10 ? digits.slice(-10) : digits;
@@ -439,6 +521,7 @@
         instagramInput.value = data.instagram_url || '';
         btnSaveCard.textContent = 'Update Card Details';
         btnResetCard.style.display = 'inline-flex';
+        updateLiveTestLink(code, true);
         showToast(setupToast, 'Card unlocked. You can now edit its details or reset it.');
       }
 
@@ -475,13 +558,8 @@
         showToast(setupToast, 'Resolving direct 5-star Google review link...');
         try {
           const { data: linkData, error: linkErr } = await supabaseClient.functions.invoke('generate-review-link', {
-            body: {
-              url: rawDest,
-              domain: window.location.hostname,
-              platform: 'google'
-            }
+            body: { url: rawDest, domain: window.location.hostname, platform: 'google' }
           });
-
           if (!linkErr && linkData?.success && linkData?.destination_url) {
             finalGoogleUrl = linkData.destination_url;
           } else {
@@ -522,6 +600,7 @@
       statusBadge.textContent = '● Active / Registered';
       statusBadge.className = 'badge badge-active';
       btnResetCard.style.display = 'inline-flex';
+      updateLiveTestLink(code, true);
       showToast(setupToast, `Success! Card #${code} is live.`);
     });
 
@@ -560,6 +639,7 @@
       categoryInput.value = 'Other';
       btnSaveCard.textContent = 'Register Card';
       btnResetCard.style.display = 'none';
+      updateLiveTestLink(code, false);
       showToast(setupToast, `Card #${code} has been wiped and is now available.`);
     });
   </script>
