@@ -14,7 +14,7 @@
   <!-- Social / SEO -->
   <meta property="og:title" content="TapToReview.in — Tap. Review. Grow." />
   <meta property="og:description" content="Contactless NFC smart cards for local businesses to get instant Google reviews." />
-  <meta property="og:image" content="assets/taptoreview-google-review-card.svg" />
+  <meta property="og:image" content="assets/black_card.jpg" />
   <meta name="theme-color" content="#0f172a">
 </head>
 <body>
@@ -66,14 +66,14 @@
         </div>
 
         <div class="hero-banner">
-          <div class="card-showcase card-showcase--hero" aria-label="PVC and 5 by 5 inch card preview">
-            <div class="card-showcase-slide showcase-pvc">
-              <img src="assets/taptoreview-google-review-card.svg" alt="PVC TapToReview smart card">
-              <strong>PVC Smart Card</strong>
+          <div class="card-showcase card-showcase--hero" aria-label="Black and white acrylic card previews">
+            <div class="card-showcase-slide">
+              <img src="assets/black_card.jpg" alt="Black acrylic TapToReview card">
+              <strong>Black Acrylic</strong>
             </div>
-            <div class="card-showcase-slide showcase-display-card">
-              <img src="assets/final_design_5x5_card.png" alt="5 by 5 inch TapToReview card">
-              <strong>5×5 inch Card</strong>
+            <div class="card-showcase-slide">
+              <img src="assets/white_card.jpg" alt="White acrylic TapToReview card">
+              <strong>White Acrylic</strong>
             </div>
           </div>
         </div>
@@ -102,11 +102,11 @@
       </div>
     </section>
 
-    <!-- DIRECT ORDER CARD SECTION (ALL-INCLUSIVE DELIVERY & VOLUME BENEFIT) -->
+    <!-- DIRECT ORDER CARD SECTION (ACRYLIC CARDS + SHIPPING) -->
     <section id="order" class="section order" style="padding-top: 10px;">
       <div class="container">
         <h2 class="reveal">Order Your Smart Review Cards</h2>
-        <p class="muted reveal">No monthly fees. Select your pack, enter delivery details, and get doorstep courier dispatch anywhere in India.</p>
+        <p class="muted reveal">Acrylic cards only — choose the black or white design. Minimum order: 5 cards at ₹210 per card, plus ₹100 shipping per order.</p>
 
         <div class="card reveal" style="max-width: 620px; margin: 28px auto 0; background: rgba(17, 24, 39, 0.9); border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 20px; padding: 32px 24px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);">
           
@@ -146,21 +146,14 @@
               </p>
             </div>
 
-            <!-- Notice: All Prices Inclusive of Delivery & Volume Benefit -->
+            <!-- Order pricing -->
             <div style="background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.25); border-radius: 10px; padding: 10px 14px; font-size: 0.82rem; color: #86efac; line-height: 1.45;">
-              🚚 <strong>All prices are 100% inclusive of doorstep delivery across India.</strong><br>
-              💡 <strong>Quantity benefit:</strong> The per-card price goes down as you order more (from ₹350/card for 1 card down to ₹240/card for 10 cards).
+              <strong>Both card designs are acrylic only.</strong> Minimum order is 5 cards at ₹210 per card, with ₹100 shipping added to each order.
             </div>
 
-            <!-- Quantity Pack Selector (1, 3, 5, 10 Only) -->
             <div style="display: flex; flex-direction: column; gap: 6px;">
               <label style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">Select Quantity</label>
-              <select id="orderPackSelect" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
-                <option value="1">1 Card — Single (₹350/card = ₹350)</option>
-                <option value="3">3 Cards — Trio Pack (₹300/card = ₹900)</option>
-                <option value="5" selected>5 Cards — Starter Pack (₹270/card = ₹1,350)</option>
-                <option value="10">10 Cards — Pro Pack (₹240/card = ₹2,400)</option>
-              </select>
+              <input type="number" id="orderPackSelect" min="5" step="1" value="5" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
             </div>
 
             <!-- SEPARATE SHIPPING DETAILS -->
@@ -198,28 +191,28 @@
               </div>
             </div>
 
-            <!-- Payment Breakdown & Dynamic UPI QR (Inclusive of Delivery) -->
+            <!-- Payment Breakdown & Dynamic UPI QR -->
             <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 12px; padding: 16px; margin-top: 4px;">
               
               <!-- Effective Rate Breakdown -->
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.86rem;">
-                <span style="color: #94a3b8;">Effective Price Per Card:</span>
-                <strong id="homeOrderRateNote" style="color: #38bdf8;">₹270/card</strong>
+                <span style="color: #94a3b8;">Acrylic Card Price:</span>
+                <strong id="homeOrderRateNote" style="color: #38bdf8;">₹210/card</strong>
               </div>
 
               <!-- Delivery Status Line -->
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.07); font-size: 0.86rem;">
-                <span style="color: #94a3b8;">Doorstep Courier Delivery:</span>
-                <strong style="color: #4ade80;">FREE (Included in price)</strong>
+                <span style="color: #94a3b8;">Shipping per order:</span>
+                <strong style="color: #fbbf24;">₹100</strong>
               </div>
 
               <!-- Total Payable Amount -->
               <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;">
                 <div>
                   <span style="font-size: 0.84rem; font-weight: 700; color: #cbd5e1;">Total Payable Amount:</span>
-                  <div style="font-size: 0.74rem; color: #94a3b8;">(All-inclusive, no hidden charges)</div>
+                  <div style="font-size: 0.74rem; color: #94a3b8;">Card total plus shipping</div>
                 </div>
-                <div id="homeOrderAmount" style="font-size: 1.6rem; font-weight: 800; color: #d4af37;">₹1,350</div>
+                <div id="homeOrderAmount" style="font-size: 1.6rem; font-weight: 800; color: #d4af37;">₹1,150</div>
               </div>
 
               <!-- UPI QR Display -->
@@ -330,66 +323,51 @@
           <div class="feature reveal">
             <div class="feature-icon">💪</div>
             <h3>Premium Durability</h3>
-            <p>Waterproof, matte‑finish PVC smart cards built for daily use.</p>
+            <p>Durable acrylic smart cards built for daily use.</p>
           </div>
         </div>
         <p class="trust reveal">Trusted by cafes, salons, clinics and retail shops across India.</p>
       </div>
     </section>
 
-    <!-- PACKS / PRICING PREVIEW -->
+    <!-- ACRYLIC CARD DESIGNS -->
     <section id="pricing" class="section pricing">
       <div class="container">
-        <h2 class="reveal">Choose Your Smart Review Card</h2>
-        <p class="pricing-intro muted reveal">Both options work with NFC. Choose the finish that suits your business.</p>
-
-        <div class="card-showcase reveal" aria-label="Card offerings preview">
-          <div class="card-showcase-slide showcase-pvc">
-            <img src="assets/taptoreview-google-review-card.svg" alt="PVC TapToReview smart card">
-            <strong>PVC Smart Card</strong>
-          </div>
-          <div class="card-showcase-slide showcase-display-card">
-            <img src="assets/final_design_5x5_card.png" alt="5 by 5 inch TapToReview card">
-            <strong>5×5 inch Card</strong>
-          </div>
-        </div>
+        <h2 class="reveal">Choose Your Acrylic Card Design</h2>
+        <p class="pricing-intro muted reveal">Choose the black or white finish. Both card options are acrylic only.</p>
 
         <div class="pricing-products">
           <article class="product-panel reveal">
             <div class="product-copy">
               <div class="product-panel-heading">
                 <div>
-                  <p class="product-kicker">Everyday essential</p>
-                  <h3>Small PVC Card</h3>
-                  <p class="muted">Durable, waterproof and ideal for counters, tables and daily use.</p>
+                  <p class="product-kicker">Acrylic card</p>
+                  <h3>Black Acrylic Card</h3>
+                  <p class="muted">Black finish. Acrylic only.</p>
                 </div>
-                <span class="product-size">Standard size</span>
+                <span class="product-size">Black</span>
               </div>
-              <div class="price-list">
-                <div class="price-row">
-                  <span><strong>1 card or Bulk</strong><small>Instant NFC tap</small></span>
-                  <a class="btn btn-primary" href="#order">Order Card</a>
-                </div>
+              <div class="product-image">
+                <img src="assets/black_card.jpg" alt="Black acrylic TapToReview card">
               </div>
+              <a class="btn btn-primary" href="#order">Order Acrylic Cards</a>
             </div>
           </article>
 
-          <article class="product-panel display-card-panel reveal">
-            <div class="product-copy display-card-product-info">
+          <article class="product-panel reveal">
+            <div class="product-copy">
               <div class="product-panel-heading">
                 <div>
-                  <p class="product-kicker">Premium display piece</p>
-                  <h3>5×5 inch Card</h3>
-                  <p class="muted">A high-visibility card for reception desks and front counters.</p>
+                  <p class="product-kicker">Acrylic card</p>
+                  <h3>White Acrylic Card</h3>
+                  <p class="muted">White finish. Acrylic only.</p>
                 </div>
-                <span class="product-size">5×5 inch</span>
+                <span class="product-size">White</span>
               </div>
-              <div class="price-list">
-                <div class="price-row">
-                  <span><strong>1 card or Bulk</strong><small>High visibility display</small></span>
-                  <a class="btn btn-primary" href="#order">Order Card</a>
-                </div>
+              <div class="product-image">
+                <img src="assets/white_card.jpg" alt="White acrylic TapToReview card">
               </div>
+              <a class="btn btn-primary" href="#order">Order Acrylic Cards</a>
             </div>
           </article>
         </div>
@@ -529,18 +507,15 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/app.js" defer></script>
 
-  <!-- DIRECT ORDER PROCESSING SCRIPT (1, 3, 5, 10 CARDS - FREE DELIVERY INCLUDED) -->
+  <!-- DIRECT ORDER PROCESSING SCRIPT -->
   <script>
     (function() {
       const ADMIN_UPI_ID = '7620952720@ybl';
       const ADMIN_PHONE = '917620952720';
 
-      const PRICING = {
-        1:  { total: 350,  rate: 350 },
-        3:  { total: 900,  rate: 300 },
-        5:  { total: 1350, rate: 270 },
-        10: { total: 2400, rate: 240 }
-      };
+      const MIN_ORDER_QUANTITY = 5;
+      const CARD_PRICE = 210;
+      const SHIPPING_FEE = 100;
 
       const supabaseUrl = 'https://zavspmqjmrinfxenbosz.supabase.co';
       const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphdnNwbXFqbXJpbmZ4ZW5ib3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTkzOTksImV4cCI6MjEwNDAzNTM5OX0.7K-EFRRgLmLOh8BltHDH0qh61TDLbLlzCjJ5jBMXCc8';
@@ -573,15 +548,26 @@
       let verifiedPartnerName = '';
       let isShipNameManuallyEdited = false;
 
+      function getOrderTotal(quantity) {
+        return quantity * CARD_PRICE + SHIPPING_FEE;
+      }
+
       function updatePricing() {
-        const qty = parseInt(packSelect.value, 10);
-        const tier = PRICING[qty] || { total: qty * 240, rate: 240 };
-        amountEl.textContent = `₹${tier.total.toLocaleString('en-IN')}`;
-        rateNoteEl.textContent = `₹${tier.rate}/card`;
+        const qty = Number(packSelect.value);
+        if (!Number.isInteger(qty) || qty < MIN_ORDER_QUANTITY) {
+          amountEl.textContent = '—';
+          payLinkEl.removeAttribute('href');
+          qrEl.removeAttribute('src');
+          return;
+        }
+
+        const total = getOrderTotal(qty);
+        amountEl.textContent = `₹${total.toLocaleString('en-IN')}`;
+        rateNoteEl.textContent = `₹${CARD_PRICE}/card`;
 
         const nameVal = verifiedPartnerName || custName.value.trim() || 'Customer';
         const note = encodeURIComponent(`TapToReview ${qty} Cards - ${nameVal}`);
-        const upiUri = `upi://pay?pa=${ADMIN_UPI_ID}&pn=TapToReview&am=${tier.total}&cu=INR&tn=${note}`;
+        const upiUri = `upi://pay?pa=${ADMIN_UPI_ID}&pn=TapToReview&am=${total}&cu=INR&tn=${note}`;
         payLinkEl.href = upiUri;
         qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=2&data=${encodeURIComponent(upiUri)}`;
       }
@@ -668,7 +654,7 @@
         isShipNameManuallyEdited = true;
       });
 
-      packSelect.addEventListener('change', updatePricing);
+      packSelect.addEventListener('input', updatePricing);
       updatePricing();
 
       // Submit Direct Order
@@ -678,13 +664,19 @@
         const name = isExisting ? verifiedPartnerName : custName.value.trim();
         const phone = custPhone.value.trim().replace(/\D/g, '');
         const pin = custPin.value.trim();
-        const qty = parseInt(packSelect.value, 10);
-        const tier = PRICING[qty];
+        const qty = Number(packSelect.value);
 
         const shipName = shipNameInput.value.trim();
         const shipAddress = shipAddressInput.value.trim();
         const shipCity = shipCityInput.value.trim();
         const shipPincode = shipPincodeInput.value.trim().replace(/\D/g, '');
+
+        if (!Number.isInteger(qty) || qty < MIN_ORDER_QUANTITY) {
+          showMsg(`Please order at least ${MIN_ORDER_QUANTITY} cards.`, true);
+          return;
+        }
+
+        const total = getOrderTotal(qty);
 
         if (phone.length < 10) {
           showMsg('Please enter a valid 10-digit mobile number.', true);
@@ -734,7 +726,7 @@
           p_pin: pin,
           p_quantity: qty,
           p_notes: combinedShippingAddress,
-          p_total_amount: tier.total
+          p_total_amount: total
         });
 
         submitBtn.disabled = false;
@@ -748,7 +740,7 @@
         showMsg('Order received! Opening WhatsApp to confirm payment...');
 
         const partnerName = data.reseller_name || name || 'Customer';
-        const waMsg = `Hi TapToReview,\nI just placed an order!\n\nPartner/Name: ${partnerName}\nPhone: ${phone}\nQuantity: ${qty} Cards (${tier.rate}/card)\nTotal Amount: ₹${tier.total} (Free Doorstep Delivery Included)\n\nShipping Address:\nReceiver: ${shipName}\nAddress: ${shipAddress}\nCity: ${shipCity}\nPincode: ${shipPincode}\n\nPayment completed via UPI. Please confirm shipment.`;
+        const waMsg = `Hi TapToReview,\nI just placed an order!\n\nPartner/Name: ${partnerName}\nPhone: ${phone}\nQuantity: ${qty} acrylic cards (₹${CARD_PRICE}/card)\nShipping: ₹${SHIPPING_FEE}\nTotal Amount: ₹${total}\n\nShipping Address:\nReceiver: ${shipName}\nAddress: ${shipAddress}\nCity: ${shipCity}\nPincode: ${shipPincode}\n\nPayment completed via UPI. Please confirm shipment.`;
         window.open(`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(waMsg)}`, '_blank', 'noopener');
       });
 
