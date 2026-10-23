@@ -106,7 +106,7 @@
     <section id="order" class="section order" style="padding-top: 10px;">
       <div class="container">
         <h2 class="reveal">Order Your Smart Review Cards</h2>
-        <p class="muted reveal">Acrylic cards only — choose the black or white design. Minimum order: 5 cards at ₹210 per card, plus ₹100 shipping per order.</p>
+        <p class="muted reveal">Acrylic cards only — choose the black or white design. Minimum order: 5 cards at ₹170 per card, plus ₹120 delivery per order.</p>
 
         <div class="card reveal" style="max-width: 620px; margin: 28px auto 0; background: rgba(17, 24, 39, 0.9); border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 20px; padding: 32px 24px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);">
           
@@ -119,10 +119,11 @@
               <div id="phoneFeedback" style="font-size: 0.82rem; font-weight: 600; display: none; margin-top: 2px;"></div>
             </div>
 
-            <!-- Customer Name (Hidden if verified reseller) -->
             <div id="groupName" style="display: flex; flex-direction: column; gap: 6px;">
-              <label style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">Your Full Name / Business Name</label>
-              <input type="text" id="orderCustName" placeholder="e.g. Rahul Sharma" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
+              <label for="orderCustFirstName" style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">First Name</label>
+              <input type="text" id="orderCustFirstName" placeholder="e.g. Rahul" autocomplete="given-name" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
+              <label for="orderCustLastName" style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">Last Name</label>
+              <input type="text" id="orderCustLastName" placeholder="e.g. Sharma" autocomplete="family-name" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
             </div>
 
             <!-- 4-Digit Security PIN (Hidden if verified reseller) -->
@@ -139,7 +140,7 @@
 
             <!-- Order pricing -->
             <div style="background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.25); border-radius: 10px; padding: 10px 14px; font-size: 0.82rem; color: #86efac; line-height: 1.45;">
-              <strong>Both card designs are acrylic only.</strong> Minimum order is 5 cards at ₹210 per card, with ₹100 shipping added to each order.
+              <strong>Both card designs are acrylic only.</strong> Minimum order is 5 cards at ₹170 per card, with a flat ₹120 delivery charge per order.
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -163,10 +164,15 @@
                 <input type="text" id="orderShipName" placeholder="Name of person receiving the courier" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
               </div>
 
-              <!-- Line 2: Street / Building / Shop Address -->
               <div style="display: flex; flex-direction: column; gap: 6px;">
-                <label style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">House / Shop / Flat / Street / Area</label>
-                <input type="text" id="orderShipAddress" placeholder="e.g. Shop #4, Ground Floor, Galaxy Tower, MG Road" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
+                <label for="orderShipHouse" style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">House Number / House Name</label>
+                <input type="text" id="orderShipHouse" placeholder="e.g. House 12 or Rose Villa" autocomplete="address-line1" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
+              </div>
+
+              <!-- Street / Building / Shop Address -->
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label for="orderShipAddress" style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">Street / Area / Landmark</label>
+                <input type="text" id="orderShipAddress" placeholder="e.g. MG Road, near City Mall" autocomplete="address-line2" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
               </div>
 
               <!-- Line 3 & 4: City and 6-Digit Pincode -->
@@ -188,13 +194,13 @@
               <!-- Effective Rate Breakdown -->
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.86rem;">
                 <span style="color: #94a3b8;">Acrylic Card Price:</span>
-                <strong id="homeOrderRateNote" style="color: #38bdf8;">₹210/card</strong>
+                <strong id="homeOrderRateNote" style="color: #38bdf8;">₹170/card</strong>
               </div>
 
               <!-- Delivery Status Line -->
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.07); font-size: 0.86rem;">
                 <span style="color: #94a3b8;">Shipping per order:</span>
-                <strong style="color: #fbbf24;">₹100</strong>
+                <strong style="color: #fbbf24;">₹120</strong>
               </div>
 
               <!-- Total Payable Amount -->
@@ -220,10 +226,19 @@
                 <div id="homeUpiCopyFeedback" role="status" style="font-size: 0.78rem; color: #86efac; min-height: 1em;"></div>
               </div>
 
-              <label style="display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; padding: 12px; background: rgba(2, 132, 199, 0.1); border: 1px solid rgba(2, 132, 199, 0.3); border-radius: 10px; color: #cbd5e1; font-size: 0.84rem;">
-                <input type="checkbox" id="homePaymentConfirmed" style="width: 18px; height: 18px; flex: 0 0 auto; accent-color: #d4af37;">
-                <span>Have you paid the total shown above to <strong>7620952720@ybl</strong>? Confirm only after completing the payment.</span>
-              </label>
+              <fieldset style="margin: 14px 0 0; padding: 12px; background: rgba(2, 132, 199, 0.1); border: 1px solid rgba(2, 132, 199, 0.3); border-radius: 10px; color: #cbd5e1; font-size: 0.84rem;">
+                <legend>Did you pay?</legend>
+                <div style="display: flex; gap: 20px; padding-top: 6px;">
+                  <label style="display: inline-flex; align-items: center; gap: 6px;">
+                    <input type="radio" name="homePaymentConfirmed" value="yes" style="accent-color: #d4af37;">
+                    Yes
+                  </label>
+                  <label style="display: inline-flex; align-items: center; gap: 6px;">
+                    <input type="radio" name="homePaymentConfirmed" value="no" checked style="accent-color: #d4af37;">
+                    No
+                  </label>
+                </div>
+              </fieldset>
             </div>
 
             <button type="submit" id="btnSubmitHomeOrder" class="btn btn-primary" disabled style="width: 100%; padding: 14px; font-size: 1rem; margin-top: 6px;">
@@ -511,8 +526,8 @@
       const ADMIN_PHONE = '917620952720';
 
       const MIN_ORDER_QUANTITY = 5;
-      const CARD_PRICE = 210;
-      const SHIPPING_FEE = 100;
+      const CARD_PRICE = 170;
+      const SHIPPING_FEE = 120;
 
       const supabaseUrl = 'https://zavspmqjmrinfxenbosz.supabase.co';
       const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphdnNwbXFqbXJpbmZ4ZW5ib3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTkzOTksImV4cCI6MjEwNDAzNTM5OX0.7K-EFRRgLmLOh8BltHDH0qh61TDLbLlzCjJ5jBMXCc8';
@@ -520,13 +535,15 @@
 
       const groupName = document.getElementById('groupName');
       const groupPin = document.getElementById('groupPin');
-      const custName = document.getElementById('orderCustName');
+      const custFirstName = document.getElementById('orderCustFirstName');
+      const custLastName = document.getElementById('orderCustLastName');
       const custPin = document.getElementById('orderCustPin');
       const custPhone = document.getElementById('orderCustPhone');
       const phoneFeedback = document.getElementById('phoneFeedback');
 
       // Structured Shipping Inputs
       const shipNameInput = document.getElementById('orderShipName');
+      const shipHouseInput = document.getElementById('orderShipHouse');
       const shipAddressInput = document.getElementById('orderShipAddress');
       const shipCityInput = document.getElementById('orderShipCity');
       const shipPincodeInput = document.getElementById('orderShipPincode');
@@ -537,7 +554,7 @@
       const qrEl = document.getElementById('homeUpiQr');
       const copyUpiButton = document.getElementById('btnCopyHomeUpiId');
       const copyUpiFeedback = document.getElementById('homeUpiCopyFeedback');
-      const paymentConfirmed = document.getElementById('homePaymentConfirmed');
+      const paymentOptions = document.querySelectorAll('input[name="homePaymentConfirmed"]');
       const form = document.getElementById('homeOrderForm');
       const submitBtn = document.getElementById('btnSubmitHomeOrder');
       const toast = document.getElementById('homeOrderToast');
@@ -554,26 +571,39 @@
         return quantity * CARD_PRICE + SHIPPING_FEE;
       }
 
+      function getCustomerName() {
+        return `${custFirstName.value.trim()} ${custLastName.value.trim()}`.trim();
+      }
+
+      function hasConfirmedPayment() {
+        return document.querySelector('input[name="homePaymentConfirmed"]:checked')?.value === 'yes';
+      }
+
+      function selectPaymentNo() {
+        const noOption = document.querySelector('input[name="homePaymentConfirmed"][value="no"]');
+        if (noOption) noOption.checked = true;
+      }
+
       function updatePricing() {
         const qty = Number(packSelect.value);
         if (!Number.isInteger(qty) || qty < MIN_ORDER_QUANTITY) {
           amountEl.textContent = '—';
           qrEl.removeAttribute('src');
           lastQuotedTotal = null;
-          paymentConfirmed.checked = false;
+          selectPaymentNo();
           updateSubmitAvailability();
           return;
         }
 
         const total = getOrderTotal(qty);
         if (lastQuotedTotal !== null && lastQuotedTotal !== total) {
-          paymentConfirmed.checked = false;
+          selectPaymentNo();
         }
         lastQuotedTotal = total;
         amountEl.textContent = `₹${total.toLocaleString('en-IN')}`;
         rateNoteEl.textContent = `₹${CARD_PRICE}/card`;
 
-        const nameVal = verifiedPartnerName || custName.value.trim() || 'Customer';
+        const nameVal = verifiedPartnerName || getCustomerName() || 'Customer';
         const note = encodeURIComponent(`TapToReview ${qty} Cards - ${nameVal}`);
         const upiUri = `upi://pay?pa=${ADMIN_UPI_ID}&pn=TapToReview&am=${total}&cu=INR&tn=${note}`;
         qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=2&data=${encodeURIComponent(upiUri)}`;
@@ -582,14 +612,15 @@
 
       function updateSubmitAvailability() {
         const partnerStatusReady = partnerLookupStatus === 'new' || partnerLookupStatus === 'registered';
-        submitBtn.disabled = !paymentConfirmed.checked || !partnerStatusReady;
+        submitBtn.disabled = !hasConfirmedPayment() || !partnerStatusReady;
       }
 
       function showNewCustomerFields() {
         groupPin.style.display = 'flex';
         custPin.setAttribute('required', 'true');
         groupName.style.display = 'flex';
-        custName.setAttribute('required', 'true');
+        custFirstName.setAttribute('required', 'true');
+        custLastName.setAttribute('required', 'true');
       }
 
       function showRegisteredPartner(name) {
@@ -597,7 +628,8 @@
         custPin.removeAttribute('required');
         custPin.value = '';
         groupName.style.display = 'none';
-        custName.removeAttribute('required');
+        custFirstName.removeAttribute('required');
+        custLastName.removeAttribute('required');
         verifiedPartnerName = name;
         isPartnerVerified = true;
         if (!isShipNameManuallyEdited) {
@@ -611,7 +643,8 @@
         const cleanPhone = rawDigits.slice(-10);
         const wasRegistered = partnerLookupStatus === 'registered';
         if (wasRegistered) {
-          custName.value = '';
+          custFirstName.value = '';
+          custLastName.value = '';
           verifiedPartnerName = '';
           if (!isShipNameManuallyEdited) shipNameInput.value = '';
         }
@@ -689,19 +722,22 @@
 
       custPhone.addEventListener('input', validatePartnerPhone);
 
-      custName.addEventListener('input', () => {
+      function handleCustomerNameInput() {
         updatePricing();
         if (partnerLookupStatus !== 'registered' && !isShipNameManuallyEdited) {
-          shipNameInput.value = custName.value;
+          shipNameInput.value = getCustomerName();
         }
-      });
+      }
+
+      custFirstName.addEventListener('input', handleCustomerNameInput);
+      custLastName.addEventListener('input', handleCustomerNameInput);
 
       shipNameInput.addEventListener('input', () => {
         isShipNameManuallyEdited = true;
       });
 
       packSelect.addEventListener('input', updatePricing);
-      paymentConfirmed.addEventListener('change', updateSubmitAvailability);
+      paymentOptions.forEach((option) => option.addEventListener('change', updateSubmitAvailability));
       copyUpiButton.addEventListener('click', async () => {
         try {
           if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -729,12 +765,13 @@
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const isExisting = partnerLookupStatus === 'registered';
-        const name = isExisting ? verifiedPartnerName : custName.value.trim();
+        const name = isExisting ? verifiedPartnerName : getCustomerName();
         const phone = custPhone.value.trim().replace(/\D/g, '');
         const pin = custPin.value.trim();
         const qty = Number(packSelect.value);
 
         const shipName = shipNameInput.value.trim();
+        const shipHouse = shipHouseInput.value.trim();
         const shipAddress = shipAddressInput.value.trim();
         const shipCity = shipCityInput.value.trim();
         const shipPincode = shipPincodeInput.value.trim().replace(/\D/g, '');
@@ -744,7 +781,7 @@
           return;
         }
 
-        if (!paymentConfirmed.checked) {
+        if (!hasConfirmedPayment()) {
           showMsg('Please complete the UPI payment and confirm it before placing your order.', true);
           return;
         }
@@ -776,8 +813,13 @@
           return;
         }
 
+        if (!shipHouse) {
+          showMsg('Please enter your house number or house name.', true);
+          return;
+        }
+
         if (!shipAddress) {
-          showMsg('Please enter your house / shop / street address.', true);
+          showMsg('Please enter your street, area, or landmark.', true);
           return;
         }
 
@@ -791,7 +833,7 @@
           return;
         }
 
-        const combinedShippingAddress = `${shipName}, ${shipAddress}, ${shipCity} - ${shipPincode}`;
+        const combinedShippingAddress = `${shipName}, ${shipHouse}, ${shipAddress}, ${shipCity} - ${shipPincode}`;
 
         submitBtn.disabled = true;
         submitBtn.textContent = 'Processing order...';
@@ -827,7 +869,7 @@
         showMsg('Order received! Opening WhatsApp to confirm payment...');
 
         const partnerName = data.reseller_name || name || 'Customer';
-        const waMsg = `Hi TapToReview,\nI just placed an order!\n\nPartner/Name: ${partnerName}\nPhone: ${phone}\nQuantity: ${qty} acrylic cards (₹${CARD_PRICE}/card)\nShipping: ₹${SHIPPING_FEE}\nTotal Amount: ₹${total}\n\nShipping Address:\nReceiver: ${shipName}\nAddress: ${shipAddress}\nCity: ${shipCity}\nPincode: ${shipPincode}\n\nPayment completed via UPI. Please confirm shipment.`;
+        const waMsg = `Hi TapToReview,\nI just placed an order!\n\nPartner/Name: ${partnerName}\nPhone: ${phone}\nQuantity: ${qty} acrylic cards (₹${CARD_PRICE}/card)\nDelivery: ₹${SHIPPING_FEE} per order\nTotal Amount: ₹${total}\n\nShipping Address:\nReceiver: ${shipName}\nHouse Number / Name: ${shipHouse}\nStreet / Area / Landmark: ${shipAddress}\nCity: ${shipCity}\nPincode: ${shipPincode}\n\nPayment completed via UPI. Please confirm shipment.`;
         window.open(`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(waMsg)}`, '_blank', 'noopener');
       });
 
