@@ -112,15 +112,6 @@
           
           <form id="homeOrderForm" style="display: grid; gap: 16px; text-align: left;">
             
-            <!-- Reseller / Existing User Checkbox -->
-            <div style="background: rgba(2, 132, 199, 0.1); border: 1px solid rgba(2, 132, 199, 0.3); border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
-              <input type="checkbox" id="isResellerCheck" style="width: 18px; height: 18px; accent-color: #d4af37; cursor: pointer;">
-              <label for="isResellerCheck" style="font-size: 0.88rem; font-weight: 600; color: #38bdf8; cursor: pointer; margin: 0;">
-                I am already an existing registered partner / customer
-              </label>
-            </div>
-
-            <!-- 10-Digit Mobile Input -->
             <div style="display: flex; flex-direction: column; gap: 6px;">
               <label style="font-size: 0.84rem; font-weight: 600; color: #cbd5e1;">10-Digit WhatsApp Mobile Number</label>
               <input type="tel" id="orderCustPhone" placeholder="e.g. 9876543210" maxlength="10" required style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 0.94rem; outline: none;">
@@ -221,16 +212,22 @@
                 <div style="background: #fff; padding: 10px; border-radius: 10px; display: inline-block;">
                   <img id="homeUpiQr" style="width: 150px; height: 150px; display: block;" alt="UPI QR Code" src="">
                 </div>
-                <div style="font-size: 0.76rem; color: #cbd5e1; margin-top: 4px;">UPI ID: <strong>7620952720@ybl</strong></div>
+                <div style="font-size: 0.76rem; color: #cbd5e1; margin-top: 4px;">UPI ID: <strong id="homeUpiId">7620952720@ybl</strong></div>
+                <p style="font-size: 0.78rem; color: #94a3b8; margin: 8px 0;">Copy the UPI ID, open any payment app, choose UPI ID / UPI address, and paste it to pay the total shown above.</p>
+                <button type="button" id="btnCopyHomeUpiId" class="btn" style="width: 100%; background: #1e293b; color: #fff; font-weight: 700; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; justify-content: center;">
+                  Copy UPI ID
+                </button>
+                <div id="homeUpiCopyFeedback" role="status" style="font-size: 0.78rem; color: #86efac; min-height: 1em;"></div>
               </div>
 
-              <a id="btnHomeUpiPay" href="#" class="btn" style="width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-weight: 700; padding: 12px; border-radius: 8px; text-decoration: none; display: flex; justify-content: center; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);">
-                ⚡ Pay via UPI App (GPay / PhonePe / Paytm)
-              </a>
+              <label style="display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; padding: 12px; background: rgba(2, 132, 199, 0.1); border: 1px solid rgba(2, 132, 199, 0.3); border-radius: 10px; color: #cbd5e1; font-size: 0.84rem;">
+                <input type="checkbox" id="homePaymentConfirmed" style="width: 18px; height: 18px; flex: 0 0 auto; accent-color: #d4af37;">
+                <span>Have you paid the total shown above to <strong>7620952720@ybl</strong>? Confirm only after completing the payment.</span>
+              </label>
             </div>
 
-            <button type="submit" id="btnSubmitHomeOrder" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 1rem; margin-top: 6px;">
-              Place Order & Confirm on WhatsApp
+            <button type="submit" id="btnSubmitHomeOrder" class="btn btn-primary" disabled style="width: 100%; padding: 14px; font-size: 1rem; margin-top: 6px;">
+              Confirm Paid Order on WhatsApp
             </button>
 
             <div id="homeOrderToast" style="display: none; padding: 10px; border-radius: 8px; font-size: 0.88rem; text-align: center; margin-top: 6px;"></div>
@@ -521,7 +518,6 @@
       const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphdnNwbXFqbXJpbmZ4ZW5ib3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTkzOTksImV4cCI6MjEwNDAzNTM5OX0.7K-EFRRgLmLOh8BltHDH0qh61TDLbLlzCjJ5jBMXCc8';
       const localSupabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-      const isResellerCheck = document.getElementById('isResellerCheck');
       const groupName = document.getElementById('groupName');
       const groupPin = document.getElementById('groupPin');
       const custName = document.getElementById('orderCustName');
@@ -539,7 +535,9 @@
       const amountEl = document.getElementById('homeOrderAmount');
       const rateNoteEl = document.getElementById('homeOrderRateNote');
       const qrEl = document.getElementById('homeUpiQr');
-      const payLinkEl = document.getElementById('btnHomeUpiPay');
+      const copyUpiButton = document.getElementById('btnCopyHomeUpiId');
+      const copyUpiFeedback = document.getElementById('homeUpiCopyFeedback');
+      const paymentConfirmed = document.getElementById('homePaymentConfirmed');
       const form = document.getElementById('homeOrderForm');
       const submitBtn = document.getElementById('btnSubmitHomeOrder');
       const toast = document.getElementById('homeOrderToast');
@@ -547,6 +545,10 @@
       let isPartnerVerified = false;
       let verifiedPartnerName = '';
       let isShipNameManuallyEdited = false;
+      let partnerLookupStatus = 'incomplete';
+      let verifiedPhone = '';
+      let partnerLookupSequence = 0;
+      let lastQuotedTotal = null;
 
       function getOrderTotal(quantity) {
         return quantity * CARD_PRICE + SHIPPING_FEE;
@@ -556,96 +558,140 @@
         const qty = Number(packSelect.value);
         if (!Number.isInteger(qty) || qty < MIN_ORDER_QUANTITY) {
           amountEl.textContent = '—';
-          payLinkEl.removeAttribute('href');
           qrEl.removeAttribute('src');
+          lastQuotedTotal = null;
+          paymentConfirmed.checked = false;
+          updateSubmitAvailability();
           return;
         }
 
         const total = getOrderTotal(qty);
+        if (lastQuotedTotal !== null && lastQuotedTotal !== total) {
+          paymentConfirmed.checked = false;
+        }
+        lastQuotedTotal = total;
         amountEl.textContent = `₹${total.toLocaleString('en-IN')}`;
         rateNoteEl.textContent = `₹${CARD_PRICE}/card`;
 
         const nameVal = verifiedPartnerName || custName.value.trim() || 'Customer';
         const note = encodeURIComponent(`TapToReview ${qty} Cards - ${nameVal}`);
         const upiUri = `upi://pay?pa=${ADMIN_UPI_ID}&pn=TapToReview&am=${total}&cu=INR&tn=${note}`;
-        payLinkEl.href = upiUri;
         qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=2&data=${encodeURIComponent(upiUri)}`;
+        updateSubmitAvailability();
       }
 
-      // Check partner registration in Supabase database
+      function updateSubmitAvailability() {
+        const partnerStatusReady = partnerLookupStatus === 'new' || partnerLookupStatus === 'registered';
+        submitBtn.disabled = !paymentConfirmed.checked || !partnerStatusReady;
+      }
+
+      function showNewCustomerFields() {
+        groupPin.style.display = 'flex';
+        custPin.setAttribute('required', 'true');
+        groupName.style.display = 'flex';
+        custName.setAttribute('required', 'true');
+      }
+
+      function showRegisteredPartner(name) {
+        groupPin.style.display = 'none';
+        custPin.removeAttribute('required');
+        custPin.value = '';
+        groupName.style.display = 'none';
+        custName.removeAttribute('required');
+        verifiedPartnerName = name;
+        isPartnerVerified = true;
+        if (!isShipNameManuallyEdited) {
+          shipNameInput.value = name;
+        }
+      }
+
       async function validatePartnerPhone() {
+        const requestSequence = ++partnerLookupSequence;
         const rawDigits = custPhone.value.replace(/\D/g, '');
-        if (rawDigits.length < 10) {
+        const cleanPhone = rawDigits.slice(-10);
+        const wasRegistered = partnerLookupStatus === 'registered';
+        if (wasRegistered) {
+          custName.value = '';
+          verifiedPartnerName = '';
+          if (!isShipNameManuallyEdited) shipNameInput.value = '';
+        }
+        isPartnerVerified = false;
+        verifiedPhone = '';
+        if (rawDigits.length !== 10) {
+          partnerLookupStatus = 'incomplete';
+          showNewCustomerFields();
           phoneFeedback.style.display = 'block';
           phoneFeedback.style.color = '#94a3b8';
-          phoneFeedback.textContent = 'Enter your 10-digit registered number...';
-          isPartnerVerified = false;
-          submitBtn.disabled = true;
+          phoneFeedback.textContent = 'Enter a 10-digit number to check for an existing partner account.';
+          updateSubmitAvailability();
           return;
         }
 
-        const cleanPhone = rawDigits.slice(-10);
+        partnerLookupStatus = 'checking';
+        showNewCustomerFields();
+        updateSubmitAvailability();
         phoneFeedback.style.display = 'block';
         phoneFeedback.style.color = '#38bdf8';
         phoneFeedback.textContent = 'Checking partner records...';
 
-        const { data, error } = await localSupabase.rpc('check_reseller_phone', {
-          p_phone: cleanPhone
-        });
-
-        if (error || !data?.exists) {
+        let result;
+        try {
+          result = await localSupabase.rpc('check_reseller_phone', {
+            p_phone: cleanPhone
+          });
+        } catch (error) {
+          if (requestSequence !== partnerLookupSequence) return;
           isPartnerVerified = false;
           verifiedPartnerName = '';
+          verifiedPhone = '';
+          partnerLookupStatus = 'error';
           phoneFeedback.style.color = '#f87171';
-          phoneFeedback.textContent = '✕ Number not found in partner records. Please check the number or uncheck the box above to register as a new customer.';
-          submitBtn.disabled = true;
-        } else {
-          isPartnerVerified = true;
-          verifiedPartnerName = data.name;
-          phoneFeedback.style.color = '#4ade80';
-          phoneFeedback.textContent = `✓ Partner Verified: Welcome back, ${data.name}!`;
-          submitBtn.disabled = false;
-
-          if (!isShipNameManuallyEdited && !shipNameInput.value) {
-            shipNameInput.value = data.name;
-          }
-          updatePricing();
+          phoneFeedback.textContent = 'Could not check partner records. Please try entering the number again.';
+          updateSubmitAvailability();
+          return;
         }
+
+        if (requestSequence !== partnerLookupSequence) return;
+
+        const { data, error } = result;
+        if (error || typeof data?.exists !== 'boolean') {
+          isPartnerVerified = false;
+          verifiedPartnerName = '';
+          verifiedPhone = '';
+          partnerLookupStatus = 'error';
+          phoneFeedback.style.color = '#f87171';
+          phoneFeedback.textContent = error?.message || 'Could not verify this number. Please try again.';
+        } else if (data.exists) {
+          if (typeof data.name !== 'string' || !data.name.trim()) {
+            isPartnerVerified = false;
+            verifiedPartnerName = '';
+            verifiedPhone = '';
+            partnerLookupStatus = 'error';
+            phoneFeedback.style.color = '#f87171';
+            phoneFeedback.textContent = 'Partner account found, but its name could not be loaded. Please contact support.';
+          } else {
+            partnerLookupStatus = 'registered';
+            verifiedPhone = cleanPhone;
+            showRegisteredPartner(data.name.trim());
+            phoneFeedback.style.color = '#4ade80';
+            phoneFeedback.textContent = `✓ Partner account found for ${data.name}. Your saved account will be used; no new PIN is needed.`;
+            updatePricing();
+          }
+        } else {
+          verifiedPartnerName = '';
+          partnerLookupStatus = 'new';
+          showNewCustomerFields();
+          phoneFeedback.style.color = '#fbbf24';
+          phoneFeedback.textContent = 'No partner account found. Enter your name and create a 4-digit activation PIN.';
+        }
+        updateSubmitAvailability();
       }
 
-      custPhone.addEventListener('input', () => {
-        if (isResellerCheck.checked) {
-          validatePartnerPhone();
-        } else {
-          phoneFeedback.style.display = 'none';
-          submitBtn.disabled = false;
-        }
-      });
-
-      isResellerCheck.addEventListener('change', () => {
-        if (isResellerCheck.checked) {
-          groupPin.style.display = 'none';
-          custPin.removeAttribute('required');
-          custPin.value = '';
-          groupName.style.display = 'none';
-          custName.removeAttribute('required');
-          validatePartnerPhone();
-        } else {
-          groupPin.style.display = 'flex';
-          custPin.setAttribute('required', 'true');
-          groupName.style.display = 'flex';
-          custName.setAttribute('required', 'true');
-          phoneFeedback.style.display = 'none';
-          submitBtn.disabled = false;
-          isPartnerVerified = false;
-          verifiedPartnerName = '';
-          updatePricing();
-        }
-      });
+      custPhone.addEventListener('input', validatePartnerPhone);
 
       custName.addEventListener('input', () => {
         updatePricing();
-        if (!isResellerCheck.checked && !isShipNameManuallyEdited) {
+        if (partnerLookupStatus !== 'registered' && !isShipNameManuallyEdited) {
           shipNameInput.value = custName.value;
         }
       });
@@ -655,12 +701,34 @@
       });
 
       packSelect.addEventListener('input', updatePricing);
+      paymentConfirmed.addEventListener('change', updateSubmitAvailability);
+      copyUpiButton.addEventListener('click', async () => {
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(ADMIN_UPI_ID);
+          } else {
+            const input = document.createElement('textarea');
+            input.value = ADMIN_UPI_ID;
+            input.setAttribute('readonly', '');
+            input.style.position = 'fixed';
+            input.style.opacity = '0';
+            document.body.appendChild(input);
+            input.select();
+            const copied = document.execCommand('copy');
+            input.remove();
+            if (!copied) throw new Error('Clipboard copy was rejected.');
+          }
+          copyUpiFeedback.textContent = 'UPI ID copied. Paste it into your payment app.';
+        } catch (error) {
+          copyUpiFeedback.textContent = `Could not copy automatically. Please copy this UPI ID manually: ${ADMIN_UPI_ID}`;
+        }
+      });
       updatePricing();
 
       // Submit Direct Order
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const isExisting = isResellerCheck.checked;
+        const isExisting = partnerLookupStatus === 'registered';
         const name = isExisting ? verifiedPartnerName : custName.value.trim();
         const phone = custPhone.value.trim().replace(/\D/g, '');
         const pin = custPin.value.trim();
@@ -676,15 +744,25 @@
           return;
         }
 
+        if (!paymentConfirmed.checked) {
+          showMsg('Please complete the UPI payment and confirm it before placing your order.', true);
+          return;
+        }
+
         const total = getOrderTotal(qty);
 
-        if (phone.length < 10) {
+        if (!/^\d{10}$/.test(phone)) {
           showMsg('Please enter a valid 10-digit mobile number.', true);
           return;
         }
 
-        if (isExisting && !isPartnerVerified) {
-          showMsg('Please enter a registered partner mobile number before ordering.', true);
+        if (partnerLookupStatus === 'checking' || partnerLookupStatus === 'incomplete' || partnerLookupStatus === 'error') {
+          showMsg('Please wait for the phone number partner check to complete successfully.', true);
+          return;
+        }
+
+        if (isExisting && (!isPartnerVerified || verifiedPhone !== phone)) {
+          showMsg('The registered partner check does not match this phone number. Please check the number again.', true);
           return;
         }
 
@@ -719,19 +797,28 @@
         submitBtn.textContent = 'Processing order...';
         showMsg('Placing your order...');
 
-        const { data, error } = await localSupabase.rpc('place_direct_order', {
-          p_is_existing: isExisting,
-          p_name: name,
-          p_phone: phone,
-          p_pin: pin,
-          p_quantity: qty,
-          p_notes: combinedShippingAddress,
-          p_total_amount: total
-        });
+        let orderResult;
+        try {
+          orderResult = await localSupabase.rpc('place_direct_order', {
+            p_is_existing: isExisting,
+            p_name: name,
+            p_phone: phone,
+            p_pin: isExisting ? '' : pin,
+            p_quantity: qty,
+            p_notes: combinedShippingAddress,
+            p_total_amount: total
+          });
+        } catch (error) {
+          submitBtn.textContent = 'Confirm Paid Order on WhatsApp';
+          updateSubmitAvailability();
+          showMsg('Could not submit the order due to a connection problem. Please try again.', true);
+          return;
+        }
 
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Place Order & Confirm on WhatsApp';
+        updateSubmitAvailability();
+        submitBtn.textContent = 'Confirm Paid Order on WhatsApp';
 
+        const { data, error } = orderResult;
         if (error || !data?.success) {
           showMsg(data?.message || error?.message || 'Failed to place order.', true);
           return;
